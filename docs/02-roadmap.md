@@ -48,11 +48,13 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 
 ### Fase 5 — qualidade e lançamento
 
-- [ ] revisar acessibilidade básica e navegação por teclado;
+- [x] revisar acessibilidade básica e navegação por teclado;
 - [ ] executar testes em desktop, tablet e celular;
-- [ ] testar recuperação, importação e migração de dados;
-- [ ] atualizar a documentação e o changelog;
+- [x] testar recuperação, importação e migração de dados;
+- [x] atualizar a documentação e o changelog;
 - [ ] fechar a tag e a release `v0.1.0`.
+
+A base candidata à release possui testes automatizados e checklist manual. Os dois itens restantes dependem da validação em navegadores reais e da aprovação da branch `dev` antes da integração em `main`.
 
 ## Critérios de conclusão
 

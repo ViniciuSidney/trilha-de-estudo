@@ -32,6 +32,7 @@ Aplicação web local-first que conduz uma sessão de estudo em uma sequência l
 - sessão demonstrativa completa;
 - temas claro e escuro;
 - interface responsiva em viewport única;
+- navegação por teclado, foco visível e semântica acessível;
 - salvamento automático no navegador;
 - exportação individual da sessão em TXT e JSON.
 
@@ -45,6 +46,16 @@ Não há instalação nem processo de compilação.
 
 Também é possível servir a pasta por qualquer servidor HTTP local.
 
+## Verificações automatizadas
+
+Com Node.js instalado, execute:
+
+```bash
+npm test
+```
+
+A suíte cobre o modelo de dados, migrações, backups, validações, exportações, aprendizagem ativa, as doze telas e requisitos estruturais de acessibilidade. O GitHub Actions repete essas verificações em pushes e pull requests.
+
 ## Estrutura
 
 ```text
@@ -57,7 +68,8 @@ trilha-de-estudo/
 │   ├── 03-testes.md
 │   ├── 04-formato-dos-dados.md
 │   ├── 05-decisoes-tecnicas.md
-│   └── 06-git-e-github.md
+│   ├── 06-git-e-github.md
+│   └── 07-checklist-release.md
 ├── js/
 │   ├── app.js
 │   ├── backup.js
@@ -74,6 +86,9 @@ trilha-de-estudo/
 │   ├── utils.js
 │   ├── validators.js
 │   └── views.js
+├── tests/
+│   └── run-tests.js
+├── .github/workflows/checks.yml
 ├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
@@ -92,7 +107,7 @@ O projeto não envia dados automaticamente para servidores próprios. As sessõe
 - `prototype-v0.4`: tag recomendada para registrar esta base;
 - `v0.1.0`: primeira versão oficial planejada.
 
-Consulte o [roadmap](docs/02-roadmap.md) e o [guia do primeiro commit](docs/06-git-e-github.md).
+Consulte o [roadmap](docs/02-roadmap.md), o [guia de Git e GitHub](docs/06-git-e-github.md) e o [checklist da release v0.1.0](docs/07-checklist-release.md).
 
 ## Licença
 

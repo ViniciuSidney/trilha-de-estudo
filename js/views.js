@@ -16,7 +16,7 @@
 
     function renderItemDots(kind, count, current, answered = () => false) {
       return `<div class="item-dots" aria-label="Navegação dos itens">${Array.from({ length: count }, (_, i) => `
-        <button class="item-dot ${i === current ? "active" : ""} ${answered(i) ? "answered" : ""}" type="button" data-item-kind="${kind}" data-item-index="${i}" aria-label="Abrir item ${i + 1}">${i + 1}</button>
+        <button class="item-dot ${i === current ? "active" : ""} ${answered(i) ? "answered" : ""}" type="button" data-item-kind="${kind}" data-item-index="${i}" aria-label="Abrir item ${i + 1}" ${i === current ? 'aria-current="true"' : ""}>${i + 1}</button>
       `).join("")}</div>`;
     }
 
@@ -96,7 +96,7 @@
         ${outdated ? '<div class="notice"><span>!</span><div><strong>Conteúdo possivelmente desatualizado</strong>A base teórica mudou depois desta importação. Gere e importe novas perguntas antes de continuar.</div></div>' : ""}
         <div class="prepare-grid">
         <div class="card">
-          <div class="field"><label>Prompt das perguntas introdutórias</label><textarea class="prompt-box" readonly>${escapeHTML(introPrompt())}</textarea></div>
+          <div class="field"><label for="introPrompt">Prompt das perguntas introdutórias</label><textarea id="introPrompt" class="prompt-box" readonly>${escapeHTML(introPrompt())}</textarea></div>
           <div class="button-group copy-row"><button class="button secondary compact" type="button" data-copy="intro">Copiar prompt</button></div>
         </div>
         <div class="card soft">
@@ -124,8 +124,8 @@
           </div>
           <div class="question-card single-activity-card">
             <span class="question-index">Pergunta ${index + 1}</span>
-            <p>${escapeHTML(q.question)}</p>
-            <textarea data-intro-answer="${index}" placeholder="Responda com suas próprias palavras…">${escapeHTML(state.introAnswers[index] || "")}</textarea>
+            <label for="introAnswer-${index}">${escapeHTML(q.question)}</label>
+            <textarea id="introAnswer-${index}" data-intro-answer="${index}" placeholder="Responda com suas próprias palavras…">${escapeHTML(state.introAnswers[index] || "")}</textarea>
             <div class="review-actions">
               <button class="button secondary compact" type="button" data-action="review-intro" data-review-intro-button ${!(state.introAnswers[index] || "").trim() ? "disabled" : ""}>${reviewed ? "Comparação realizada ✓" : "Comparar com a resposta-modelo"}</button>
             </div>
@@ -148,7 +148,7 @@
         ${outdated ? '<div class="notice"><span>!</span><div><strong>Questões possivelmente desatualizadas</strong>A teoria ou suas respostas introdutórias mudaram. Reimporte as questões para manter a sequência coerente.</div></div>' : ""}
         <div class="prepare-grid">
         <div class="card">
-          <div class="field"><label>Prompt das questões</label><textarea class="prompt-box" readonly>${escapeHTML(quizPrompt())}</textarea></div>
+          <div class="field"><label for="quizPrompt">Prompt das questões</label><textarea id="quizPrompt" class="prompt-box" readonly>${escapeHTML(quizPrompt())}</textarea></div>
           <div class="button-group copy-row"><button class="button secondary compact" type="button" data-copy="quiz">Copiar prompt</button></div>
         </div>
         <div class="card soft">
@@ -174,12 +174,12 @@
           </div>
           <div class="question-card single-activity-card">
             <span class="question-index">Questão ${index + 1}</span>
-            <p>${escapeHTML(q.statement)}</p>
+            <fieldset class="option-group"><legend>${escapeHTML(q.statement)}</legend>
             <div class="options">${Object.entries(q.options).map(([key, value]) => `
               <label class="option">
                 <input type="radio" name="quiz-${index}" value="${escapeHTML(key)}" data-quiz-answer="${index}" ${state.quizAnswers[index] === key ? "checked" : ""} />
                 <span><span class="option-key">${escapeHTML(key)}.</span> ${escapeHTML(value)}</span>
-              </label>`).join("")}</div>
+              </label>`).join("")}</div></fieldset>
             <div class="item-navigation">
               <button class="button secondary compact" type="button" data-item-kind="quiz" data-item-index="${index - 1}" ${index === 0 ? "disabled" : ""}>← Anterior</button>
               <button class="button secondary compact" type="button" data-item-kind="quiz" data-item-index="${index + 1}" ${index === state.quizQuestions.length - 1 ? "disabled" : ""}>Próxima →</button>
@@ -216,7 +216,8 @@
         <div class="card yellow">
           <h2>Preparar a devolutiva</h2>
           <p class="hint">O próximo prompt contém seu resultado, respostas e gabarito para obter uma devolutiva contextualizada.</p>
-          <textarea class="prompt-box" readonly>${escapeHTML(correctionPrompt())}</textarea>
+          <label for="correctionPrompt" class="sr-only">Prompt de correção</label>
+          <textarea id="correctionPrompt" class="prompt-box" readonly>${escapeHTML(correctionPrompt())}</textarea>
           <div class="button-group copy-row"><button class="button secondary compact" type="button" data-copy="correction">Copiar prompt de correção</button></div>
         </div>
         <div class="card soft">
@@ -254,16 +255,16 @@
               <p><strong>${escapeHTML(currentError.q.statement)}</strong></p>
               <small class="hint">Resposta inicial: ${escapeHTML(state.quizAnswers[currentError.index])} · Gabarito estudado: ${escapeHTML(currentError.q.answer)} — ${escapeHTML(currentError.q.explanation || "")}</small>
               <div class="field correction-field">
-                <label>Explique o erro e reescreva o raciocínio correto</label>
-                <textarea data-error-reflection="${currentError.index}" placeholder="Eu errei porque… O raciocínio correto é…">${escapeHTML(state.errorReflections[currentError.index] || "")}</textarea>
+                <label for="errorReflection-${currentError.index}">Explique o erro e reescreva o raciocínio correto</label>
+                <textarea id="errorReflection-${currentError.index}" data-error-reflection="${currentError.index}" placeholder="Eu errei porque… O raciocínio correto é…">${escapeHTML(state.errorReflections[currentError.index] || "")}</textarea>
               </div>
               <div class="retry-panel">
-                <div class="retry-heading"><div><span class="question-index">Nova tentativa</span><strong>Qual alternativa você marcaria agora?</strong></div>${retryAnswer ? `<span class="result-tag ${retryCorrect ? "correct" : "wrong"}">${retryCorrect ? "Corrigido" : "Tente novamente"}</span>` : ""}</div>
-                <div class="options">${Object.entries(currentError.q.options).map(([key, value]) => `
+                <div class="retry-heading"><div><span class="question-index">Nova tentativa</span><strong>Qual alternativa você marcaria agora?</strong></div>${retryAnswer ? `<span class="result-tag ${retryCorrect ? "correct" : "wrong"}" role="status">${retryCorrect ? "Corrigido" : "Tente novamente"}</span>` : ""}</div>
+                <fieldset class="option-group"><legend class="sr-only">Nova tentativa da questão ${currentError.index + 1}</legend><div class="options">${Object.entries(currentError.q.options).map(([key, value]) => `
                   <label class="option ${retryAnswer === key ? (key === currentError.q.answer ? "retry-correct" : "retry-wrong") : ""}">
                     <input type="radio" name="retry-${currentError.index}" value="${escapeHTML(key)}" data-retry-answer="${currentError.index}" ${retryAnswer === key ? "checked" : ""} />
                     <span><span class="option-key">${escapeHTML(key)}.</span> ${escapeHTML(value)}</span>
-                  </label>`).join("")}</div>
+                  </label>`).join("")}</div></fieldset>
               </div>
               <div class="item-navigation">
                 <button class="button secondary compact" type="button" data-item-kind="error" data-item-index="${errorIndex - 1}" ${errorIndex === 0 ? "disabled" : ""}>← Anterior</button>
@@ -284,7 +285,8 @@
         <div class="card purple">
           <h2>Prompt para flashcards</h2>
           <p class="hint">O prompt reúne a teoria, a devolutiva e suas correções ativas.</p>
-          <textarea class="prompt-box" readonly>${escapeHTML(flashcardPrompt())}</textarea>
+          <label for="flashcardPrompt" class="sr-only">Prompt para flashcards</label>
+          <textarea id="flashcardPrompt" class="prompt-box" readonly>${escapeHTML(flashcardPrompt())}</textarea>
           <div class="button-group copy-row"><button class="button secondary compact" type="button" data-copy="flashcards">Copiar prompt de flashcards</button></div>
         </div>
         <div class="card soft">
@@ -310,11 +312,11 @@
             ${renderItemDots("flashcard", state.flashcards.length, index, (i) => Boolean(state.flashcards[i].front.trim() && state.flashcards[i].back.trim()))}
           </div>
           <article class="flashcard single-activity-card">
-            <button class="remove-card" type="button" data-remove-card="${index}">Remover</button>
-            <label>Frente</label>
-            <textarea data-card-front="${index}">${escapeHTML(card.front)}</textarea>
-            <label>Verso</label>
-            <textarea data-card-back="${index}">${escapeHTML(card.back)}</textarea>
+            <button class="remove-card" type="button" data-remove-card="${index}" aria-label="Remover flashcard ${index + 1}">Remover</button>
+            <label for="cardFront-${index}">Frente</label>
+            <textarea id="cardFront-${index}" data-card-front="${index}">${escapeHTML(card.front)}</textarea>
+            <label for="cardBack-${index}">Verso</label>
+            <textarea id="cardBack-${index}" data-card-back="${index}">${escapeHTML(card.back)}</textarea>
             <div class="tags">${escapeHTML((card.tags || []).join(" · "))}</div>
             <div class="item-navigation">
               <button class="button secondary compact" type="button" data-item-kind="flashcard" data-item-index="${index - 1}" ${index === 0 ? "disabled" : ""}>← Anterior</button>
@@ -400,7 +402,7 @@
           const accessible = i <= state.maxStep;
           const active = i === state.currentStep;
           const done = i < state.maxStep || (i === steps.length - 1 && state.maxStep === i);
-          return `<button class="step-link ${active ? "active" : ""} ${done ? "done" : ""}" type="button" data-step="${i}" ${accessible ? "" : "disabled"}>
+          return `<button class="step-link ${active ? "active" : ""} ${done ? "done" : ""}" type="button" data-step="${i}" aria-label="${escapeHTML(phase.label)}: ${escapeHTML(item.label)}" ${active ? 'aria-current="step"' : ""} ${accessible ? "" : "disabled"}>
             <span class="step-number">${done && !active ? "✓" : item.mode.startsWith("2") ? "2" : "1"}</span><span class="step-name">${item.label}</span>
           </button>`;
         }).join("");

@@ -81,3 +81,13 @@ O `schemaVersion: 2` representa um repositório local de sessões. O carregament
 O backup completo é separado da exportação textual de uma sessão. JSON serve para restaurar a aplicação; TXT permanece como registro humano de estudo.
 
 A importação segue uma sequência conservadora: leitura do arquivo, validação profunda, prévia, confirmação e somente então gravação no `localStorage`. A sessão ativa não é restaurada automaticamente, evitando que o usuário entre em um estudo diferente sem perceber. Qualquer falha encerra o processo antes da escrita e preserva integralmente os dados atuais.
+
+## Acessibilidade e teclado
+
+A aplicação preserva controles HTML nativos e acrescenta semântica para progresso, etapa atual, grupos de alternativas, mensagens de estado e diálogo. O conteúdo principal pode ser alcançado por um link de salto, todos os controles interativos possuem foco visível e movimentos são reduzidos quando essa preferência estiver ativa no sistema.
+
+Em telas menores, o menu lateral controla foco, estado expandido e fechamento por `Esc`. O diálogo de restauração mantém o foco dentro do painel enquanto está aberto e o devolve ao controle de origem no fechamento.
+
+## Qualidade automatizada
+
+A suíte em `tests/run-tests.js` usa apenas recursos nativos do Node.js. Ela cobre seletores, exportação, migrações, backup, validações, renderização das doze telas e requisitos estruturais da interface. O GitHub Actions executa a mesma verificação em `dev`, `main` e pull requests para reduzir regressões antes de uma release.

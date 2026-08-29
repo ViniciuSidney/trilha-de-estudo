@@ -28,6 +28,10 @@ Confirmar que o fluxo principal permanece utilizável, que os dados são preserv
 - [x] congelar a duração ao concluir a sessão;
 - [x] gerar exportações individuais completas em TXT e JSON;
 - [x] manter compatibilidade com backups anteriores sem os novos campos opcionais.
+- [x] executar uma suíte reproduzível com Node.js e GitHub Actions;
+- [x] validar uma exportação individual real em TXT e JSON;
+- [x] verificar marcação semântica de progresso, etapas, grupos de alternativas e diálogo;
+- [x] verificar breakpoints, foco visível e preferência por movimento reduzido no CSS.
 
 O teste visual e interativo em navegador real permanece obrigatório após alterações de interface ou integração entre módulos.
 
@@ -113,6 +117,24 @@ O teste visual e interativo em navegador real permanece obrigatório após alter
 - [ ] confirmar associação entre labels e campos;
 - [ ] conferir contraste nos dois temas;
 - [ ] testar zoom de 200%;
+
+O roteiro final por tamanho de tela está em [`07-checklist-release.md`](07-checklist-release.md). As verificações marcadas nesta seção continuam manuais porque dependem de navegador, sistema operacional e tecnologias assistivas reais.
+
+## Execução automatizada
+
+Com Node.js 22 ou versão LTS compatível:
+
+```bash
+npm test
+```
+
+Para validar também arquivos de exportação individuais:
+
+```bash
+node tests/run-tests.js --session-json caminho/sessao.json --session-text caminho/sessao.txt
+```
+
+O workflow `Verificações` executa `npm run check` automaticamente em pushes para `dev` e `main` e em pull requests destinados a `main`.
 
 ## Critério mínimo para uma versão
 

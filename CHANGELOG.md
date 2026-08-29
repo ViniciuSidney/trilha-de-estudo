@@ -8,7 +8,7 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 
 ### Planejado
 
-- revisão de acessibilidade e responsividade para a `v0.1.0`.
+- validação manual responsiva e publicação da `v0.1.0`.
 
 ### Adicionado
 
@@ -30,6 +30,13 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - migração automática do estado plano do protótipo;
 - migração automática do envelope `schemaVersion: 1`;
 - normalização de campos essenciais antes de carregar ou salvar.
+- link de salto para o conteúdo principal;
+- semântica de progresso, etapa atual, grupos de alternativas e mensagens de estado;
+- controle de foco no menu móvel e no diálogo de restauração;
+- suporte à preferência de movimento reduzido e a cores forçadas;
+- suíte automatizada reproduzível com Node.js;
+- workflow de verificações no GitHub Actions;
+- checklist manual para aprovação da `v0.1.0`.
 
 ### Alterado
 
@@ -43,6 +50,9 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - erros de importação permanecem visíveis por mais tempo e não alteram o conteúdo atual;
 - alterações em conteúdos anteriores invalidam somente as etapas dependentes;
 - o desempenho inicial permanece preservado após novas tentativas.
+- campos e flashcards possuem associações de rótulo explícitas;
+- navegação responsiva possui backdrop, fechamento por `Esc` e estado expandido;
+- espaçamentos verticais se adaptam a desktops de menor altura.
 
 ## [prototype-v0.4] — 2026-08-29
 

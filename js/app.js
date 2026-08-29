@@ -19,6 +19,7 @@ let state = stateManager.getState();
 let toastTimer;
 let viewRenderer;
 let pendingBackup = null;
+let focusBeforeModal = null;
 
 const screen = document.querySelector("#screen");
 const screenContent = document.querySelector("#screenContent");
@@ -26,6 +27,7 @@ const screenActions = document.querySelector("#screenActions");
 const stepNav = document.querySelector("#stepNav");
 const progressLabel = document.querySelector("#progressLabel");
 const progressBar = document.querySelector("#progressBar");
+const progressTrack = document.querySelector("#progressTrack");
 const saveStatus = document.querySelector("#saveStatus");
 const sidebarSubject = document.querySelector("#sidebarSubject");
 const toast = document.querySelector("#toast");
@@ -37,6 +39,11 @@ const backupFileInput = document.querySelector("#backupFileInput");
 const backupModal = document.querySelector("#backupModal");
 const backupPreview = document.querySelector("#backupPreview");
 const restoreBackupButton = document.querySelector("#restoreBackupButton");
+const appShell = document.querySelector(".app-shell");
+const menuButton = document.querySelector("#menuButton");
+const menuBackdrop = document.querySelector("#menuBackdrop");
+const sidebar = document.querySelector("#sidebar");
+const mobileViewport = window.matchMedia("(max-width: 920px)");
 
 applyTheme();
 
@@ -79,6 +86,7 @@ function createNewSession() {
   render();
   screen.scrollTo({ top: 0 });
   showToast("Nova sessão criada.");
+  focusScreenHeading();
 }
 
 function openSession(id) {
@@ -88,6 +96,7 @@ function openSession(id) {
   applyTheme();
   render();
   screen.scrollTo({ top: 0 });
+  focusScreenHeading();
 }
 
 function leaveCurrentSession() {
@@ -96,6 +105,7 @@ function leaveCurrentSession() {
   state = stateManager.replaceState({ ...createInitialState(), theme: sessionService.getTheme() });
   render();
   screen.scrollTo({ top: 0 });
+  focusScreenHeading();
 }
 
 function showToast(message, type = "success") {
@@ -106,14 +116,67 @@ function showToast(message, type = "success") {
   toastTimer = window.setTimeout(() => toast.classList.remove("show"), type === "error" ? 5000 : 2500);
 }
 
+function focusScreenHeading() {
+  const heading = screenContent.querySelector("h1");
+  if (!heading) return screen.focus({ preventScroll: true });
+  heading.id = "screenTitle";
+  heading.tabIndex = -1;
+  heading.focus({ preventScroll: true });
+}
+
+function setMobileMenu(open, { returnFocus = false } = {}) {
+  const expanded = Boolean(open && mobileViewport.matches);
+  document.body.classList.toggle("menu-open", expanded);
+  menuButton.setAttribute("aria-expanded", String(expanded));
+  menuButton.setAttribute("aria-label", expanded ? "Fechar etapas" : "Abrir etapas");
+  menuBackdrop.hidden = !expanded;
+  sidebar.inert = mobileViewport.matches && !expanded;
+  sidebar.setAttribute("aria-hidden", String(mobileViewport.matches && !expanded));
+  if (expanded) sidebar.querySelector('.step-link[aria-current="step"], .text-button')?.focus();
+  else if (returnFocus) menuButton.focus();
+}
+
+function syncResponsiveNavigation() {
+  if (!mobileViewport.matches) {
+    document.body.classList.remove("menu-open");
+    menuButton.setAttribute("aria-expanded", "false");
+    menuButton.setAttribute("aria-label", "Abrir etapas");
+    menuBackdrop.hidden = true;
+    sidebar.inert = false;
+    sidebar.removeAttribute("aria-hidden");
+  } else {
+    setMobileMenu(document.body.classList.contains("menu-open"));
+  }
+}
+
+function trapModalFocus(event) {
+  if (backupModal.hidden || event.key !== "Tab") return;
+  const focusable = [...backupModal.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+    .filter((element) => !element.hidden);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function closeBackupPreview() {
   pendingBackup = null;
   backupModal.hidden = true;
   document.body.classList.remove("modal-open");
+  appShell.inert = false;
   backupFileInput.value = "";
+  if (focusBeforeModal?.isConnected) focusBeforeModal.focus();
+  focusBeforeModal = null;
 }
 
 function openBackupPreview(parsed, fileName) {
+  focusBeforeModal = document.activeElement;
   pendingBackup = parsed.repository;
   const { summary } = parsed;
   const exportedAt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short" }).format(new Date(summary.exportedAt));
@@ -126,6 +189,7 @@ function openBackupPreview(parsed, fileName) {
     <div class="notice"><span aria-hidden="true">!</span><div><strong>O histórico atual será substituído</strong>As ${summary.total} sessões validadas deste arquivo substituirão todas as sessões salvas neste navegador. Esta ação não altera o arquivo de backup.</div></div>`;
   backupModal.hidden = false;
   document.body.classList.add("modal-open");
+  appShell.inert = true;
   restoreBackupButton.focus();
 }
 
@@ -159,6 +223,7 @@ function restoreCompleteBackup() {
   render();
   screen.scrollTo({ top: 0 });
   showToast("Backup restaurado com segurança.");
+  focusScreenHeading();
 }
 
 async function copyText(text, success = "Prompt copiado!") {
@@ -186,7 +251,8 @@ function goToStep(index) {
   saveState();
   render();
   screen.scrollTo({ top: 0, behavior: "smooth" });
-  document.body.classList.remove("menu-open");
+  setMobileMenu(false);
+  focusScreenHeading();
 }
 
 function advance() {
@@ -197,6 +263,7 @@ function advance() {
   saveState();
   render();
   screen.scrollTo({ top: 0, behavior: "smooth" });
+  focusScreenHeading();
 }
 
 function back() {
@@ -206,6 +273,7 @@ function back() {
   saveState();
   render();
   screen.scrollTo({ top: 0, behavior: "smooth" });
+  focusScreenHeading();
 }
 
 
@@ -336,6 +404,7 @@ function setItemIndex(kind, index) {
   saveState();
   render();
   screen.scrollTo({ top: 0, behavior: "smooth" });
+  screenContent.querySelector(`[data-item-kind="${kind}"][aria-current="true"]`)?.focus({ preventScroll: true });
 }
 
 
@@ -346,12 +415,18 @@ function render() {
   screenActions.innerHTML = "";
 
   if (homeView) {
+    document.body.classList.remove("menu-open");
     stepNav.innerHTML = "";
     screenContent.innerHTML = renderHome(sessionService.listSessions());
     progressLabel.textContent = "Suas sessões de estudo";
     progressBar.style.width = "0%";
     saveStatus.textContent = "Salvo neste navegador";
     sidebarSubject.textContent = "Nenhuma sessão aberta";
+    progressTrack.setAttribute("aria-valuenow", "0");
+    document.title = "Sessões · Trilha de Estudo";
+    const heading = screenContent.querySelector("h1");
+    if (heading) heading.id = "screenTitle";
+    syncResponsiveNavigation();
     return;
   }
 
@@ -362,8 +437,15 @@ function render() {
   if (primaryActions) screenActions.appendChild(primaryActions);
   const activeStep = steps[state.currentStep];
   progressLabel.textContent = `${activeStep.phase} · ${activeStep.mode}`;
-  progressBar.style.width = `${((state.currentStep + 1) / steps.length) * 100}%`;
+  const progress = Math.round(((state.currentStep + 1) / steps.length) * 100);
+  progressBar.style.width = `${progress}%`;
+  progressTrack.setAttribute("aria-valuenow", String(progress));
+  progressTrack.setAttribute("aria-valuetext", `${activeStep.phase}, ${activeStep.mode}: ${progress}%`);
   sidebarSubject.textContent = state.subject || "Ainda sem assunto";
+  const heading = screenContent.querySelector("h1");
+  if (heading) heading.id = "screenTitle";
+  document.title = `${activeStep.label} · Trilha de Estudo`;
+  syncResponsiveNavigation();
   bindDynamicEvents();
 }
 
@@ -450,6 +532,7 @@ function bindDynamicEvents() {
     }
     saveState();
     render();
+    screen.querySelector(`[data-retry-answer="${el.dataset.retryAnswer}"][value="${el.value}"]`)?.focus({ preventScroll: true });
   }));
   screen.querySelectorAll("[data-error-reflection]").forEach((el) => el.addEventListener("input", () => {
     state.errorReflections[el.dataset.errorReflection] = el.value;
@@ -520,6 +603,7 @@ function loadDemo() {
   applyTheme();
   render();
   showToast("Demonstração carregada. Percorra as etapas no seu ritmo.");
+  focusScreenHeading();
 }
 
 function resetSession() {
@@ -529,6 +613,7 @@ function resetSession() {
   applyTheme();
   render();
   showToast("Nova sessão iniciada.");
+  focusScreenHeading();
 }
 
 function handleSessionAction(action, id) {
@@ -621,13 +706,18 @@ document.addEventListener("click", (event) => {
   }
 });
 
-document.querySelector("#menuButton").addEventListener("click", () => document.body.classList.toggle("menu-open"));
+menuButton.addEventListener("click", () => setMobileMenu(!document.body.classList.contains("menu-open"), { returnFocus: document.body.classList.contains("menu-open") }));
+menuBackdrop.addEventListener("click", () => setMobileMenu(false, { returnFocus: true }));
+mobileViewport.addEventListener?.("change", syncResponsiveNavigation);
 homeButton.addEventListener("click", leaveCurrentSession);
 themeButton.addEventListener("click", toggleTheme);
 backupFileInput.addEventListener("change", () => inspectBackupFile(backupFileInput.files[0]));
 restoreBackupButton.addEventListener("click", restoreCompleteBackup);
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !backupModal.hidden) closeBackupPreview();
+  trapModalFocus(event);
+  if (event.key !== "Escape") return;
+  if (!backupModal.hidden) return closeBackupPreview();
+  if (document.body.classList.contains("menu-open")) setMobileMenu(false, { returnFocus: true });
 });
 document.querySelector("#demoButton").addEventListener("click", () => {
   if (!sessionService.getActiveSession() || !state.subject || window.confirm("A demonstração substituirá somente a sessão atual. Continuar?")) loadDemo();
