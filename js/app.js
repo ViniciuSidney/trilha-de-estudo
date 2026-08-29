@@ -9,6 +9,8 @@ const { downloadSession } = window.TrilhaApp.exporter;
 const { createDemoState } = window.TrilhaApp.demo;
 const { createViewRenderer } = window.TrilhaApp.views;
 const { sessionName, renderHome } = window.TrilhaApp.home;
+const { escapeHTML } = window.TrilhaApp.utils;
+const { downloadBackup, parseBackup } = window.TrilhaApp.backup;
 
 const sessionService = createSessionService();
 const initialRuntimeState = sessionService.getActiveState() || { ...createInitialState(), theme: sessionService.getTheme() };
@@ -16,6 +18,7 @@ const stateManager = createStateManager(initialRuntimeState);
 let state = stateManager.getState();
 let toastTimer;
 let viewRenderer;
+let pendingBackup = null;
 
 const screen = document.querySelector("#screen");
 const screenContent = document.querySelector("#screenContent");
@@ -30,6 +33,10 @@ const themeButton = document.querySelector("#themeButton");
 const themeIcon = document.querySelector("#themeIcon");
 const themeLabel = document.querySelector("#themeLabel");
 const homeButton = document.querySelector("#homeButton");
+const backupFileInput = document.querySelector("#backupFileInput");
+const backupModal = document.querySelector("#backupModal");
+const backupPreview = document.querySelector("#backupPreview");
+const restoreBackupButton = document.querySelector("#restoreBackupButton");
 
 applyTheme();
 
@@ -91,11 +98,67 @@ function leaveCurrentSession() {
   screen.scrollTo({ top: 0 });
 }
 
-function showToast(message) {
+function showToast(message, type = "success") {
   window.clearTimeout(toastTimer);
   toast.textContent = message;
+  toast.classList.toggle("error", type === "error");
   toast.classList.add("show");
-  toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2500);
+  toastTimer = window.setTimeout(() => toast.classList.remove("show"), type === "error" ? 5000 : 2500);
+}
+
+function closeBackupPreview() {
+  pendingBackup = null;
+  backupModal.hidden = true;
+  document.body.classList.remove("modal-open");
+  backupFileInput.value = "";
+}
+
+function openBackupPreview(parsed, fileName) {
+  pendingBackup = parsed.repository;
+  const { summary } = parsed;
+  const exportedAt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short" }).format(new Date(summary.exportedAt));
+  backupPreview.innerHTML = `<div class="backup-file"><strong>${escapeHTML(fileName)}</strong><span>Exportado em ${escapeHTML(exportedAt)}</span></div>
+    <div class="backup-metrics">
+      <div class="metric"><span>Total</span><strong>${summary.total}</strong></div>
+      <div class="metric"><span>Em andamento</span><strong>${summary.inProgress}</strong></div>
+      <div class="metric"><span>Concluídas</span><strong>${summary.completed}</strong></div>
+    </div>
+    <div class="notice"><span aria-hidden="true">!</span><div><strong>O histórico atual será substituído</strong>As ${summary.total} sessões validadas deste arquivo substituirão todas as sessões salvas neste navegador. Esta ação não altera o arquivo de backup.</div></div>`;
+  backupModal.hidden = false;
+  document.body.classList.add("modal-open");
+  restoreBackupButton.focus();
+}
+
+async function inspectBackupFile(file) {
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    backupFileInput.value = "";
+    return showToast("O arquivo excede o limite de 10 MB.", "error");
+  }
+  try {
+    const parsed = parseBackup(await file.text());
+    openBackupPreview(parsed, file.name);
+  } catch (error) {
+    backupFileInput.value = "";
+    showToast(error.message || "Não foi possível validar o backup.", "error");
+  }
+}
+
+function exportCompleteBackup() {
+  downloadBackup(sessionService.getRepository());
+  showToast("Backup completo exportado.");
+}
+
+function restoreCompleteBackup() {
+  if (!pendingBackup) return;
+  const result = sessionService.restoreRepository(pendingBackup);
+  if (!result.ok) return showToast("Não foi possível salvar o backup neste navegador.", "error");
+  state = stateManager.replaceState({ ...createInitialState(), theme: sessionService.getTheme() });
+  applyTheme();
+  closeBackupPreview();
+  render();
+  screen.scrollTo({ top: 0 });
+  showToast("Backup restaurado com segurança.");
 }
 
 async function copyText(text, success = "Prompt copiado!") {
@@ -185,9 +248,9 @@ viewRenderer = createViewRenderer({
 });
 
 function parseIntro() {
-  if (state.introQuestions.length && !window.confirm("Substituir as perguntas importadas? As respostas e todas as etapas dependentes delas serão apagadas.")) return;
   try {
     const parsed = validators.parseIntro(state.introRaw);
+    if (state.introQuestions.length && !window.confirm("Substituir as perguntas importadas? As respostas e todas as etapas dependentes delas serão apagadas.")) return;
     updateState({
       introQuestions: parsed,
       introAnswers: {},
@@ -210,14 +273,14 @@ function parseIntro() {
     }, true);
     showToast(`${parsed.length} perguntas importadas.`);
   } catch (error) {
-    showToast(error.message || "Não foi possível importar as perguntas.");
+    showToast(error.message || "Não foi possível importar as perguntas.", "error");
   }
 }
 
 function parseQuiz() {
-  if (state.quizQuestions.length && !window.confirm("Substituir as questões? As respostas, o resultado e as correções posteriores serão apagados.")) return;
   try {
     const questions = validators.parseQuiz(state.quizRaw);
+    if (state.quizQuestions.length && !window.confirm("Substituir as questões? As respostas, o resultado e as correções posteriores serão apagados.")) return;
     updateState({
       quizQuestions: questions,
       quizAnswers: {},
@@ -235,18 +298,18 @@ function parseQuiz() {
     }, true);
     showToast(`${questions.length} questões importadas.`);
   } catch (error) {
-    showToast(error.message || "Não foi possível importar as questões.");
+    showToast(error.message || "Não foi possível importar as questões.", "error");
   }
 }
 
 function parseFlashcards() {
-  if (state.flashcards.length && !window.confirm("Substituir os flashcards atuais? As edições feitas neles serão perdidas.")) return;
   try {
     const cards = validators.parseFlashcards(state.flashcardsRaw);
+    if (state.flashcards.length && !window.confirm("Substituir os flashcards atuais? As edições feitas neles serão perdidas.")) return;
     updateState({ flashcards: cards, flashcardIndex: 0, maxStep: Math.min(state.maxStep, 10) }, true);
     showToast(`${cards.length} flashcards importados.`);
   } catch (error) {
-    showToast(error.message || "Não foi possível importar os flashcards.");
+    showToast(error.message || "Não foi possível importar os flashcards.", "error");
   }
 }
 
@@ -399,10 +462,15 @@ function handleSessionAction(action, id) {
 }
 
 document.addEventListener("click", (event) => {
+  const backupClose = event.target.closest("[data-backup-close]");
+  if (backupClose) return closeBackupPreview();
+
   const homeAction = event.target.closest("[data-home-action]");
   if (homeAction) {
     if (homeAction.dataset.homeAction === "new") return createNewSession();
     if (homeAction.dataset.homeAction === "demo") return loadDemo();
+    if (homeAction.dataset.homeAction === "export-backup") return exportCompleteBackup();
+    if (homeAction.dataset.homeAction === "import-backup") return backupFileInput.click();
   }
 
   const sessionAction = event.target.closest("[data-session-action]");
@@ -460,6 +528,11 @@ document.addEventListener("click", (event) => {
 document.querySelector("#menuButton").addEventListener("click", () => document.body.classList.toggle("menu-open"));
 homeButton.addEventListener("click", leaveCurrentSession);
 themeButton.addEventListener("click", toggleTheme);
+backupFileInput.addEventListener("change", () => inspectBackupFile(backupFileInput.files[0]));
+restoreBackupButton.addEventListener("click", restoreCompleteBackup);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !backupModal.hidden) closeBackupPreview();
+});
 document.querySelector("#demoButton").addEventListener("click", () => {
   if (!sessionService.getActiveSession() || !state.subject || window.confirm("A demonstração substituirá somente a sessão atual. Continuar?")) loadDemo();
 });

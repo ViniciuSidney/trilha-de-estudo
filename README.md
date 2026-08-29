@@ -2,7 +2,7 @@
 
 Aplicação web local-first que conduz uma sessão de estudo em uma sequência linear apoiada por inteligência artificial. A IA prepara materiais e devolutivas; a aplicação organiza leitura, prática, correção ativa, flashcards e registro final.
 
-> Estado atual: **base oficial do projeto**, derivada do último protótipo validado (`prototype-v0.4`).
+> Estado atual: **v0.1.0 em desenvolvimento**, construída sobre o último protótipo validado (`prototype-v0.4`).
 
 ## Fluxo atual
 
@@ -20,6 +20,7 @@ Aplicação web local-first que conduz uma sessão de estudo em uma sequência l
 - central local para iniciar, continuar e administrar estudos;
 - múltiplas sessões independentes com histórico, progresso e desempenho;
 - ações para renomear, duplicar e excluir sessões;
+- backup completo em JSON com validação e prévia de restauração;
 - prompts adaptados ao conteúdo da sessão;
 - integração manual com qualquer IA por copiar e colar;
 - importação estruturada de perguntas, questões e flashcards;
@@ -56,6 +57,7 @@ trilha-de-estudo/
 │   └── 06-git-e-github.md
 ├── js/
 │   ├── app.js
+│   ├── backup.js
 │   ├── config.js
 │   ├── demo.js
 │   ├── exporter.js

@@ -17,6 +17,11 @@ Confirmar que o fluxo principal permanece utilizável, que os dados são preserv
 - [x] testar criação, abertura, renomeação, duplicação, reinício e exclusão de sessões;
 - [x] testar o percurso central → sessão → central → retomada;
 - [x] confirmar persistência do tema global e da sessão ativa após recarga.
+- [x] testar ida e volta de um backup completo em JSON;
+- [x] rejeitar JSON inválido, aplicativo incorreto, versão incompatível, IDs duplicados e estado corrompido;
+- [x] confirmar que a prévia não altera o histórico;
+- [x] confirmar que somente a restauração aprovada substitui as sessões;
+- [x] confirmar que falhas de backup e respostas inválidas da IA preservam os dados atuais.
 
 O teste visual e interativo em navegador real permanece obrigatório após alterações de interface ou integração entre módulos.
 
@@ -50,6 +55,16 @@ O teste visual e interativo em navegador real permanece obrigatório após alter
 - [ ] excluir uma sessão após a confirmação;
 - [ ] conferir assunto, progresso, desempenho e ordenação por atualização;
 - [ ] recarregar a central e confirmar o histórico salvo.
+
+## Backup e restauração
+
+- [ ] exportar um backup com sessões em diferentes etapas;
+- [ ] abrir o JSON e conferir aplicativo, versão, data, tema e sessões;
+- [ ] importar o arquivo e revisar seus indicadores antes de confirmar;
+- [ ] cancelar a prévia e confirmar que nada foi alterado;
+- [ ] restaurar o backup e conferir todas as sessões;
+- [ ] tentar importar arquivo vazio, JSON inválido e backup de versão incompatível;
+- [ ] confirmar que um erro nunca apaga o histórico atual.
 
 ## Validações
 

@@ -22,19 +22,31 @@
     return value.trim();
   }
 
+  function validateItemCount(items, singular, plural, maximum) {
+    if (!items.length) throw new ImportValidationError(`Envie pelo menos um ${singular}.`);
+    if (items.length > maximum) throw new ImportValidationError(`O limite é de ${maximum} ${plural} por importação.`);
+  }
+
   function parseIntro(raw) {
     const parsed = parseJSON(raw);
-    if (!Array.isArray(parsed) || !parsed.length) throw new ImportValidationError("Envie uma lista JSON com pelo menos uma pergunta.");
-    return parsed.map((item) => ({
-      question: requiredText(item?.question, "pergunta"),
-      modelAnswer: typeof item?.modelAnswer === "string" ? item.modelAnswer.trim() : "",
-    }));
+    if (!Array.isArray(parsed)) throw new ImportValidationError("A resposta precisa ser uma lista JSON de perguntas.");
+    validateItemCount(parsed, "pergunta", "perguntas", 30);
+    return parsed.map((item, index) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) throw new ImportValidationError(`A pergunta ${index + 1} não é um objeto válido.`);
+      return {
+        question: requiredText(item.question, `texto na pergunta ${index + 1}`),
+        modelAnswer: requiredText(item.modelAnswer, `resposta-modelo na pergunta ${index + 1}`),
+      };
+    });
   }
 
   function parseQuiz(raw) {
     const parsed = parseJSON(raw);
-    if (!Array.isArray(parsed?.questions) || !parsed.questions.length) throw new ImportValidationError('O JSON precisa conter uma lista chamada "questions".');
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new ImportValidationError("A resposta precisa ser um objeto JSON.");
+    if (!Array.isArray(parsed.questions)) throw new ImportValidationError('O JSON precisa conter uma lista chamada "questions".');
+    validateItemCount(parsed.questions, "questão", "questões", 100);
     return parsed.questions.map((question, index) => {
+      if (!question || typeof question !== "object" || Array.isArray(question)) throw new ImportValidationError(`A questão ${index + 1} não é um objeto válido.`);
       const options = question?.options;
       if (!options || typeof options !== "object" || Array.isArray(options)) throw new ImportValidationError(`A questão ${index + 1} não possui alternativas válidas.`);
       const normalizedOptions = {};
@@ -48,19 +60,27 @@
         statement: requiredText(question.statement, `enunciado na questão ${index + 1}`),
         options: normalizedOptions,
         answer,
-        explanation: typeof question.explanation === "string" ? question.explanation.trim() : "",
+        explanation: requiredText(question.explanation, `explicação na questão ${index + 1}`),
       };
     });
   }
 
   function parseFlashcards(raw) {
     const parsed = parseJSON(raw);
-    if (!Array.isArray(parsed?.cards) || !parsed.cards.length) throw new ImportValidationError('O JSON precisa conter uma lista chamada "cards".');
-    return parsed.cards.map((card, index) => ({
-      front: requiredText(card?.front, `frente no flashcard ${index + 1}`),
-      back: requiredText(card?.back, `verso no flashcard ${index + 1}`),
-      tags: Array.isArray(card?.tags) ? card.tags.filter((tag) => typeof tag === "string" && tag.trim()).map((tag) => tag.trim()) : [],
-    }));
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new ImportValidationError("A resposta precisa ser um objeto JSON.");
+    if (!Array.isArray(parsed.cards)) throw new ImportValidationError('O JSON precisa conter uma lista chamada "cards".');
+    validateItemCount(parsed.cards, "flashcard", "flashcards", 100);
+    return parsed.cards.map((card, index) => {
+      if (!card || typeof card !== "object" || Array.isArray(card)) throw new ImportValidationError(`O flashcard ${index + 1} não é um objeto válido.`);
+      if (card.tags !== undefined && (!Array.isArray(card.tags) || card.tags.some((tag) => typeof tag !== "string"))) {
+        throw new ImportValidationError(`As tags do flashcard ${index + 1} precisam formar uma lista de textos.`);
+      }
+      return {
+        front: requiredText(card.front, `frente no flashcard ${index + 1}`),
+        back: requiredText(card.back, `verso no flashcard ${index + 1}`),
+        tags: (card.tags || []).filter((tag) => tag.trim()).map((tag) => tag.trim()),
+      };
+    });
   }
 
   global.TrilhaApp.validators = { ImportValidationError, parseIntro, parseQuiz, parseFlashcards };

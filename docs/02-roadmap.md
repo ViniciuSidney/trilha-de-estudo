@@ -32,11 +32,11 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 
 ### Fase 3 — dados confiáveis
 
-- [ ] exportar e importar backup completo em JSON;
-- [ ] validar a versão e a estrutura dos backups;
-- [ ] validar estruturas recebidas da IA antes de substituir conteúdo;
-- [ ] apresentar mensagens de erro claras;
-- [ ] preservar o conteúdo preenchido quando uma importação falhar.
+- [x] exportar e importar backup completo em JSON;
+- [x] validar a versão e a estrutura dos backups;
+- [x] validar estruturas recebidas da IA antes de substituir conteúdo;
+- [x] apresentar mensagens de erro claras;
+- [x] preservar o conteúdo preenchido quando uma importação falhar.
 
 ### Fase 4 — conclusão da experiência
 

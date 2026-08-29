@@ -83,7 +83,36 @@ Esse formato também é migrado automaticamente para o modelo atual.
 - IDs devem permanecer estáveis;
 - migrações não podem apagar dados silenciosamente;
 - versões futuras incompatíveis não podem ser sobrescritas;
-- toda exportação futura de backup deve informar `schemaVersion`;
+- todo backup exportado deve informar `schemaVersion`;
 - backups incompatíveis deverão ser recusados com mensagem clara;
 - conteúdos originais importados da IA devem poder ser preservados;
 - configurações gerais não devem ser duplicadas em cada sessão.
+
+## Backup completo
+
+O arquivo exportado utiliza JSON legível e preserva configurações e sessões completas:
+
+```json
+{
+  "app": "Trilha de Estudo",
+  "schemaVersion": 2,
+  "exportedAt": "2026-08-29T00:30:00.000Z",
+  "settings": {
+    "theme": "dark"
+  },
+  "sessions": []
+}
+```
+
+O backup não mantém uma sessão ativa. Depois da restauração, a aplicação retorna à central para que o usuário escolha qual estudo abrir.
+
+Antes da restauração, a aplicação verifica:
+
+- identificação e versão do aplicativo;
+- data de exportação e tema;
+- lista de sessões e limite máximo de 500 registros;
+- IDs únicos, metadados, datas e status;
+- estrutura completa do estado de cada sessão;
+- perguntas, questões, respostas, correções e flashcards.
+
+Arquivos de até 10 MB podem ser selecionados. Após a validação, uma prévia informa quantas sessões estão em andamento e concluídas. Os dados locais somente são substituídos quando o usuário confirma a restauração.

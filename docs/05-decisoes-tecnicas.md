@@ -44,6 +44,7 @@ Estrutura atual:
 ```text
 js/
 ├── app.js
+├── backup.js
 ├── config.js
 ├── demo.js
 ├── exporter.js
@@ -64,3 +65,9 @@ O `app.js` permanece como orquestrador dos elementos do DOM e dos eventos. Regra
 ## Evolução do armazenamento
 
 O `schemaVersion: 2` representa um repositório local de sessões. O carregamento reconhece o estado plano do protótipo e o envelope `schemaVersion: 1`, cria uma primeira sessão quando há conteúdo relevante e persiste a migração imediatamente. Uma versão futura desconhecida bloqueia gravações para impedir perda silenciosa de dados.
+
+## Restauração segura
+
+O backup completo é separado da exportação textual de uma sessão. JSON serve para restaurar a aplicação; TXT permanece como registro humano de estudo.
+
+A importação segue uma sequência conservadora: leitura do arquivo, validação profunda, prévia, confirmação e somente então gravação no `localStorage`. A sessão ativa não é restaurada automaticamente, evitando que o usuário entre em um estudo diferente sem perceber. Qualquer falha encerra o processo antes da escrita e preserva integralmente os dados atuais.

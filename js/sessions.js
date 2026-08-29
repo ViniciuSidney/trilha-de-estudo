@@ -127,6 +127,13 @@
       return getActiveState();
     }
 
+    function restoreRepository(candidate) {
+      const result = storage.saveRepository(candidate);
+      if (!result.ok) return result;
+      repository = result.repository;
+      return { ok: true, repository };
+    }
+
     return {
       getRepository,
       getTheme,
@@ -143,6 +150,7 @@
       duplicateSession,
       deleteSession,
       restartActiveSession,
+      restoreRepository,
     };
   }
 

@@ -59,7 +59,11 @@
           <h1>${sessions.length ? "Continue de onde parou." : "Comece sua primeira trilha."}</h1>
           <p class="lead">Cada estudo fica salvo separadamente neste navegador. Retome uma sessão ou comece um novo percurso quando quiser.</p>
         </div>
-        <button class="button home-new-button" type="button" data-home-action="new">+ Nova sessão</button>
+        <div class="home-actions">
+          <button class="button home-new-button" type="button" data-home-action="new">+ Nova sessão</button>
+          <button class="button secondary" type="button" data-home-action="export-backup" ${sessions.length ? "" : "disabled"}>Exportar backup</button>
+          <button class="button secondary" type="button" data-home-action="import-backup">Importar backup</button>
+        </div>
       </section>
 
       <section class="home-stats" aria-label="Resumo das sessões">
