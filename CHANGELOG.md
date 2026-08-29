@@ -4,11 +4,7 @@ Todas as mudanças relevantes do projeto serão registradas neste arquivo.
 
 O formato segue os princípios do Keep a Changelog e o projeto adotará versionamento semântico a partir da v0.1.0.
 
-## [Não publicado]
-
-### Planejado
-
-- validação manual responsiva e publicação da `v0.1.0`.
+## [0.1.0] — 2026-08-29
 
 ### Adicionado
 

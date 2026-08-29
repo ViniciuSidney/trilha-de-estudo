@@ -150,3 +150,7 @@ O workflow `Verificações` executa `npm run check` automaticamente em pushes pa
 ## Critério mínimo para uma versão
 
 Uma versão só pode ser fechada quando o fluxo principal estiver completo, não houver perda de dados conhecida e todos os bloqueadores estiverem registrados ou resolvidos.
+
+## Aprovação da v0.1.0
+
+A candidata final, incluindo os refinamentos da Fase 5.1, foi aprovada manualmente em 29 de agosto de 2026. As verificações automatizadas permaneceram em `9/9`, e não foram relatados bloqueadores de fluxo, dados, responsividade ou interface.

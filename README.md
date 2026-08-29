@@ -2,7 +2,7 @@
 
 Aplicação web local-first que conduz uma sessão de estudo em uma sequência linear apoiada por inteligência artificial. A IA prepara materiais e devolutivas; a aplicação organiza leitura, prática, correção ativa, flashcards e registro final.
 
-> Estado atual: **v0.1.0 em desenvolvimento**, construída sobre o último protótipo validado (`prototype-v0.4`).
+> Estado atual: **v0.1.0 concluída**, construída sobre o último protótipo validado (`prototype-v0.4`).
 
 ## Fluxo atual
 
@@ -71,7 +71,8 @@ trilha-de-estudo/
 │   ├── 04-formato-dos-dados.md
 │   ├── 05-decisoes-tecnicas.md
 │   ├── 06-git-e-github.md
-│   └── 07-checklist-release.md
+│   ├── 07-checklist-release.md
+│   └── 08-release-v0.1.0.md
 ├── js/
 │   ├── app.js
 │   ├── backup.js
@@ -107,7 +108,7 @@ O projeto não envia dados automaticamente para servidores próprios. As sessõe
 - `main`: versões estáveis ou marcos preservados;
 - `dev`: desenvolvimento da próxima versão;
 - `prototype-v0.4`: tag recomendada para registrar esta base;
-- `v0.1.0`: primeira versão oficial planejada.
+- `v0.1.0`: primeira versão oficial estável.
 
 Consulte o [roadmap](docs/02-roadmap.md), o [guia de Git e GitHub](docs/06-git-e-github.md) e o [checklist da release v0.1.0](docs/07-checklist-release.md).
 

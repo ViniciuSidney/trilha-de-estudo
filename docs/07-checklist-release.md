@@ -2,7 +2,7 @@
 
 ## Estado atual
 
-A base de código está preparada como candidata à `v0.1.0`. A tag e a release devem ser criadas somente depois da validação manual abaixo na branch `dev`.
+A base de código da `v0.1.0` foi aprovada manualmente em 29 de agosto de 2026. Este documento permanece como registro do roteiro utilizado e como referência para versões futuras.
 
 ## Atualização e teste automatizado
 
@@ -51,7 +51,7 @@ Resultado esperado: `9/9 verificações aprovadas`.
 
 ## Fechamento
 
-Depois da aprovação manual:
+Fechamento executado após a aprovação manual:
 
 1. abrir um pull request de `dev` para `main`;
 2. confirmar a execução verde das verificações no GitHub;
