@@ -60,6 +60,16 @@
     });
   }
 
+  function validateTopics(items, sessionNumber) {
+    items.forEach((item, index) => {
+      const label = `tópico ${index + 1} da sessão ${sessionNumber}`;
+      if (!isObject(item)) throw new BackupValidationError(`O ${label} é inválido.`);
+      requireString(item.id, `O identificador do ${label}`, { allowEmpty: false });
+      requireString(item.title, `O título do ${label}`, { allowEmpty: false });
+      requireString(item.objective, `O objetivo do ${label}`);
+    });
+  }
+
   function validateState(state, sessionNumber) {
     if (!isObject(state)) throw new BackupValidationError(`O estado da sessão ${sessionNumber} é inválido.`);
 
@@ -68,6 +78,9 @@
       "quizRaw", "quizSourceSignature", "consolidation", "correctionSourceSignature", "flashcardsRaw",
     ];
     stringFields.forEach((field) => requireString(state[field], `O campo "${field}" da sessão ${sessionNumber}`));
+    ["subjectArea", "studyTheme", "topicsRaw", "topicPlanSourceSignature"].forEach((field) => {
+      if (state[field] !== undefined) requireString(state[field], `O campo "${field}" da sessão ${sessionNumber}`);
+    });
     if (!["light", "dark"].includes(state.theme)) throw new BackupValidationError(`O tema da sessão ${sessionNumber} é inválido.`);
     if (!validDate(state.startedAt)) throw new BackupValidationError(`A data inicial da sessão ${sessionNumber} é inválida.`);
 
@@ -76,6 +89,9 @@
         throw new BackupValidationError(`O campo "${field}" da sessão ${sessionNumber} é inválido.`);
       }
     });
+    if (state.topicIndex !== undefined && (!Number.isInteger(state.topicIndex) || state.topicIndex < 0)) {
+      throw new BackupValidationError(`O campo "topicIndex" da sessão ${sessionNumber} é inválido.`);
+    }
     if (typeof state.quizFinished !== "boolean") throw new BackupValidationError(`O resultado da sessão ${sessionNumber} é inválido.`);
 
     if (!Array.isArray(state.introQuestions)) throw new BackupValidationError(`As perguntas da sessão ${sessionNumber} são inválidas.`);
@@ -97,6 +113,10 @@
     validateIntroQuestions(state.introQuestions, sessionNumber);
     validateQuizQuestions(state.quizQuestions, sessionNumber);
     validateFlashcards(state.flashcards, sessionNumber);
+    if (state.topics !== undefined) {
+      if (!Array.isArray(state.topics)) throw new BackupValidationError(`Os tópicos da sessão ${sessionNumber} são inválidos.`);
+      validateTopics(state.topics, sessionNumber);
+    }
   }
 
   function validateSession(session, index, ids) {
@@ -139,7 +159,7 @@
     if (!isObject(parsed)) throw new BackupValidationError("A raiz do backup precisa ser um objeto JSON.");
     if (parsed.app !== APP_NAME) throw new BackupValidationError(`Este arquivo não pertence ao aplicativo ${APP_NAME}.`);
     if (!Number.isInteger(parsed.schemaVersion)) throw new BackupValidationError("O backup não informa uma versão válida.");
-    if (parsed.schemaVersion !== SCHEMA_VERSION) {
+    if (![2, SCHEMA_VERSION].includes(parsed.schemaVersion)) {
       const direction = parsed.schemaVersion > SCHEMA_VERSION ? "mais recente" : "mais antiga";
       throw new BackupValidationError(`O backup usa uma versão ${direction} e incompatível (versão ${parsed.schemaVersion}).`);
     }
@@ -152,14 +172,18 @@
 
     const ids = new Set();
     parsed.sessions.forEach((session, index) => validateSession(session, index, ids));
-    const repository = {
+    const sourceRepository = {
       app: APP_NAME,
-      schemaVersion: SCHEMA_VERSION,
+      schemaVersion: parsed.schemaVersion,
       savedAt: new Date().toISOString(),
       settings: { theme: parsed.settings.theme },
       activeSessionId: null,
       sessions: structuredClone(parsed.sessions),
     };
+    const repository = parsed.schemaVersion === 2
+      ? global.TrilhaApp.storage.migrateV2Repository(sourceRepository)
+      : sourceRepository;
+    repository.activeSessionId = null;
     return { backup: parsed, repository, summary: summarizeBackup(parsed) };
   }
 

@@ -147,6 +147,16 @@ node tests/run-tests.js --session-json caminho/sessao.json --session-text caminh
 
 O workflow `Verificações` executa `npm run check` automaticamente em pushes para `dev` e `main` e em pull requests destinados a `main`.
 
+## Fundação da v0.2.0
+
+- [x] confirmar as catorze telas e os novos índices nomeados;
+- [x] importar estruturas válidas de tópicos e rejeitar listas vazias;
+- [x] migrar posições das doze telas antigas para as catorze atuais;
+- [x] preservar exportações individuais da v0.1.0 durante os testes;
+- [x] gerar TXT com hierarquia e tópicos;
+- [x] renderizar tabela Markdown, negrito em células e HTML escapado;
+- [x] executar dez verificações automatizadas sem regressões.
+
 ## Critério mínimo para uma versão
 
 Uma versão só pode ser fechada quando o fluxo principal estiver completo, não houver perda de dados conhecida e todos os bloqueadores estiverem registrados ou resolvidos.

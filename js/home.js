@@ -29,7 +29,7 @@
     const progress = progressOf(session);
     const completed = session.status === "completed";
     const name = sessionName(session);
-    const subject = session.subject && session.subject !== name ? session.subject : "";
+    const studyPath = [session.state.subjectArea, session.state.studyTheme, session.subject].filter(Boolean).join(" › ");
     return `<article class="session-card">
       <div class="session-card-main">
         <div class="session-card-heading">
@@ -37,7 +37,7 @@
           <small>Atualizada em ${escapeHTML(formatDate(session.updatedAt))}</small>
         </div>
         <h3>${escapeHTML(name)}</h3>
-        ${subject ? `<p>${escapeHTML(subject)}</p>` : ""}
+        ${studyPath ? `<p>${escapeHTML(studyPath)}</p>` : ""}
         <div class="session-progress" aria-label="${progress}% concluído"><span style="width:${progress}%"></span></div>
         <div class="session-meta"><span>${progress}% da trilha</span><span>${escapeHTML(performanceOf(session))}</span></div>
       </div>

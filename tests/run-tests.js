@@ -44,9 +44,10 @@ const app = window.TrilhaApp;
 const tests = [];
 function test(name, callback) { tests.push({ name, callback }); }
 
-test("mantém as doze telas e o schema atual", () => {
-  assert.equal(app.config.steps.length, 12);
-  assert.equal(app.config.SCHEMA_VERSION, 2);
+test("expande a trilha para catorze telas e schema 3", () => {
+  assert.equal(app.config.steps.length, 14);
+  assert.equal(app.config.SCHEMA_VERSION, 3);
+  assert.equal(app.config.STEP_INDEX["topics-review"], 2);
 });
 
 test("calcula aprendizagem ativa sem alterar o resultado inicial", () => {
@@ -64,23 +65,35 @@ test("gera exportações individuais completas", () => {
   const record = JSON.parse(app.exporter.buildSessionJSON(demo, { id: "demo", status: "completed" }));
   assert.match(text, /RESULTADO INICIAL|Resultado inicial/);
   assert.match(text, /Nova tentativa: C/);
+  assert.match(text, /TÓPICOS PLANEJADOS/);
   assert.equal(record.type, "study-session");
   assert.equal(record.session.summary.retry.corrected, 1);
   assert.equal(record.session.state.quizAnswers[2], "B");
 });
 
-test("migra estado legado e schema 1 para o repositório atual", () => {
+test("migra estados legados e schema 2 para o repositório atual", () => {
   const key = app.config.STORAGE_KEY;
   const legacy = { ...app.config.createInitialState(), subject: "Legado", maxStep: 2 };
   storageData.set(key, JSON.stringify(legacy));
   let repository = app.storage.loadRepository();
-  assert.equal(repository.schemaVersion, 2);
+  assert.equal(repository.schemaVersion, 3);
   assert.equal(repository.sessions[0].subject, "Legado");
+  assert.equal(repository.sessions[0].state.maxStep, 4);
 
   storageData.set(key, JSON.stringify({ app: app.config.APP_NAME, schemaVersion: 1, state: legacy }));
   repository = app.storage.loadRepository();
   assert.equal(repository.sessions.length, 1);
-  assert.equal(repository.sessions[0].state.maxStep, 2);
+  assert.equal(repository.sessions[0].state.maxStep, 4);
+
+  const v2State = { ...legacy, currentStep: 11, maxStep: 11 };
+  ["subjectArea", "studyTheme", "topicsRaw", "topics", "topicPlanSourceSignature", "topicIndex"].forEach((field) => delete v2State[field]);
+  const v2Session = app.storage.createSessionFromState(v2State, "light", { id: "v2", status: "completed" });
+  v2Session.state = v2State;
+  storageData.set(key, JSON.stringify({ app: app.config.APP_NAME, schemaVersion: 2, settings: { theme: "light" }, activeSessionId: "v2", sessions: [v2Session] }));
+  repository = app.storage.loadRepository();
+  assert.equal(repository.schemaVersion, 3);
+  assert.equal(repository.sessions[0].state.currentStep, 13);
+  assert.deepEqual(JSON.parse(JSON.stringify(repository.sessions[0].state.topics)), []);
 });
 
 test("faz ida e volta de backup e rejeita corrupção", () => {
@@ -95,18 +108,34 @@ test("faz ida e volta de backup e rejeita corrupção", () => {
   const duplicate = app.backup.buildBackup(repository);
   duplicate.sessions.push(structuredClone(duplicate.sessions[0]));
   assert.throws(() => app.backup.parseBackup(JSON.stringify(duplicate)), /duplicados/);
+
+  const previous = app.backup.buildBackup(repository);
+  previous.schemaVersion = 2;
+  previous.sessions[0].state.currentStep = 11;
+  previous.sessions[0].state.maxStep = 11;
+  ["subjectArea", "studyTheme", "topicsRaw", "topics", "topicPlanSourceSignature", "topicIndex"].forEach((field) => delete previous.sessions[0].state[field]);
+  const migrated = app.backup.parseBackup(JSON.stringify(previous));
+  assert.equal(migrated.repository.schemaVersion, 3);
+  assert.equal(migrated.repository.sessions[0].state.currentStep, 13);
 });
 
 test("preserva dados quando uma resposta de IA é inválida", () => {
+  const topics = app.validators.parseTopics('{"topics":[{"title":"Conceito","objective":"Compreender o conceito"},{"title":"Aplicação","objective":"Aplicar o conceito"}]}');
+  assert.equal(topics.length, 2);
+  const promptState = { ...app.config.createInitialState(), subjectArea: "Física", studyTheme: "Ondulatória", subject: "Ondas", topics };
+  assert.match(app.prompts.buildTheoryPrompt(promptState), /250 a 400 palavras/);
+  assert.match(app.prompts.buildTheoryPrompt(promptState), /Conceito/);
+  assert.throws(() => app.validators.parseTopics('{"topics":[]}'));
   assert.throws(() => app.validators.parseIntro("[]"));
   assert.throws(() => app.validators.parseQuiz('{"questions":[]}'));
   assert.throws(() => app.validators.parseFlashcards('{"cards":[]}'));
 });
 
-test("renderiza as doze telas com semântica de navegação", () => {
+test("renderiza as catorze telas com planejamento e navegação", () => {
   const state = app.demo.createDemoState("light");
   const renderer = app.views.createViewRenderer({
     getState: () => state,
+    topicPlanPrompt: () => "tópicos",
     theoryPrompt: () => "teoria",
     introPrompt: () => "introdução",
     quizPrompt: () => "questões",
@@ -117,18 +146,28 @@ test("renderiza as doze telas com semântica de navegação", () => {
     getLearningSummary: () => app.selectors.getLearningSummary(state),
     wrongQuestions: () => app.selectors.getWrongQuestions(state),
   });
-  for (let index = 0; index < 12; index += 1) {
+  for (let index = 0; index < 14; index += 1) {
     state.currentStep = index;
     const html = renderer.renderScreen(index);
     assert.match(html, /<h1>/, `tela ${index + 1} sem título principal`);
   }
   assert.match(renderer.renderNav(), /aria-current="step"/);
-  state.currentStep = 6;
-  assert.match(renderer.renderScreen(6), /<fieldset class="option-group">/);
-  state.currentStep = 7;
-  const correction = renderer.renderScreen(7);
+  state.currentStep = app.config.STEP_INDEX["topics-review"];
+  assert.match(renderer.renderScreen(state.currentStep), /class="topic-review-list"/);
+  state.currentStep = app.config.STEP_INDEX["quiz-answer"];
+  assert.match(renderer.renderScreen(state.currentStep), /<fieldset class="option-group">/);
+  state.currentStep = app.config.STEP_INDEX["correction-build"];
+  const correction = renderer.renderScreen(state.currentStep);
   assert.match(correction, /class="results-list"/);
   assert.match(correction, /class="answer-choice/);
+});
+
+test("renderiza tabelas Markdown com segurança e reflow interno", () => {
+  const rendered = app.utils.renderMarkdown("| Conceito | Valor |\n|---|---|\n| Frequência | **5 Hz** |");
+  assert.match(rendered, /class="table-wrap"/);
+  assert.match(rendered, /<th scope="col">Conceito<\/th>/);
+  assert.match(rendered, /<strong>5 Hz<\/strong>/);
+  assert.doesNotMatch(app.utils.renderMarkdown("<script>alert(1)</script>"), /<script>/);
 });
 
 test("inclui recursos essenciais de acessibilidade e reflow", () => {
@@ -159,7 +198,7 @@ test("valida exportações reais quando informadas", () => {
     const record = JSON.parse(fs.readFileSync(path.resolve(jsonPath), "utf8").replace(/^\uFEFF/, ""));
     assert.equal(record.app, app.config.APP_NAME);
     assert.equal(record.type, "study-session");
-    assert.equal(record.schemaVersion, app.config.SCHEMA_VERSION);
+    assert.ok(record.schemaVersion >= 2 && record.schemaVersion <= app.config.SCHEMA_VERSION);
     assert.ok(record.session?.state?.subject);
     assert.ok(record.session?.summary?.quiz);
   }

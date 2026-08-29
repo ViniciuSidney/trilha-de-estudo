@@ -101,3 +101,13 @@ O componente oferece variações neutra, de atenção e destrutiva; aceita entra
 ## Correção imediata
 
 O gabarito não é apresentado como uma linha compacta. Cada questão possui um cartão próprio com estado, enunciado, alternativa escolhida, resposta correta quando houver erro e justificativa. Em acertos, a alternativa não é duplicada desnecessariamente. Assim, o estudante consegue comparar antes de solicitar a devolutiva aprofundada da IA.
+
+## Hierarquia do estudo
+
+Matéria, tema e assunto são campos distintos. Os tópicos pertencem ao assunto e não devem incluir conteúdos vizinhos apenas para ampliar artificialmente a trilha. Antes do panorama geral, a IA sugere uma estrutura em JSON e o estudante conserva a decisão final sobre nomes, objetivos e ordem.
+
+A primeira fase da v0.2.0 mantém as etapas de aprendizagem da versão anterior depois do planejamento. As trilhas repetíveis por tópico serão adicionadas sobre esse modelo em uma fase separada, reduzindo o risco de misturar migração, navegação dinâmica e novos exercícios em uma única alteração.
+
+## Markdown e tabelas
+
+O renderizador permanece local e sem dependências externas. O conteúdo é escapado antes da interpretação de títulos, negrito, listas e tabelas no padrão Markdown. Tabelas ficam em um contêiner próprio com rolagem horizontal interna, preservando a regra de não criar rolagem horizontal geral na aplicação.

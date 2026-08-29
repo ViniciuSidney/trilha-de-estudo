@@ -2,21 +2,28 @@
 
 Aplicação web local-first que conduz uma sessão de estudo em uma sequência linear apoiada por inteligência artificial. A IA prepara materiais e devolutivas; a aplicação organiza leitura, prática, correção ativa, flashcards e registro final.
 
-> Estado atual: **v0.1.0 concluída**, construída sobre o último protótipo validado (`prototype-v0.4`).
+Aplicação publicada: [viniciusidney.github.io/trilha-de-estudo](https://viniciusidney.github.io/trilha-de-estudo/)
+
+> Estado atual: **v0.1.0 estável na `main` e v0.2.0 em desenvolvimento na `dev`**.
 
 ## Fluxo atual
 
-1. Definição do assunto e do objetivo.
-2. Preparação e leitura da base teórica.
-3. Preparação e resposta das perguntas introdutórias.
-4. Preparação e resolução das questões objetivas.
-5. Geração da devolutiva e correção ativa dos erros.
-6. Geração e revisão dos flashcards.
-7. Resumo e exportação da sessão.
+1. Definição de matéria, tema, assunto e objetivo.
+2. Geração e revisão da estrutura de tópicos.
+3. Preparação e leitura de um panorama geral curto.
+4. Preparação e resposta das perguntas introdutórias.
+5. Preparação e resolução das questões integradoras.
+6. Geração da devolutiva e correção ativa dos erros.
+7. Geração e revisão dos flashcards.
+8. Resumo e exportação da sessão.
 
 ## Características
 
-- sete etapas principais distribuídas em doze telas;
+- oito etapas principais distribuídas em catorze telas;
+- organização Matéria → Tema → Assunto → Tópicos;
+- planejamento de tópicos importável, editável e reordenável;
+- panorama geral limitado a 400 palavras pelo prompt;
+- exibição segura e responsiva de tabelas Markdown;
 - central local para iniciar, continuar e administrar estudos;
 - múltiplas sessões independentes com histórico, progresso e desempenho;
 - ações para renomear, duplicar e excluir sessões;
@@ -56,7 +63,7 @@ Com Node.js instalado, execute:
 npm test
 ```
 
-A suíte cobre o modelo de dados, migrações, backups, validações, exportações, aprendizagem ativa, as doze telas e requisitos estruturais de acessibilidade. O GitHub Actions repete essas verificações em pushes e pull requests.
+A suíte cobre o modelo de dados, migrações, backups, validações, exportações, aprendizagem ativa, as catorze telas, tabelas Markdown e requisitos estruturais de acessibilidade. O GitHub Actions repete essas verificações em pushes e pull requests.
 
 ## Estrutura
 

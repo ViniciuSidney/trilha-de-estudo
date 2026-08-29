@@ -27,6 +27,21 @@
     if (items.length > maximum) throw new ImportValidationError(`O limite é de ${maximum} ${plural} por importação.`);
   }
 
+  function parseTopics(raw) {
+    const parsed = parseJSON(raw);
+    const topics = Array.isArray(parsed) ? parsed : parsed?.topics;
+    if (!Array.isArray(topics)) throw new ImportValidationError('O JSON precisa conter uma lista chamada "topics".');
+    if (topics.length < 2 || topics.length > 10) throw new ImportValidationError("A resposta precisa conter entre 2 e 10 tópicos.");
+    return topics.map((topic, index) => {
+      if (!topic || typeof topic !== "object" || Array.isArray(topic)) throw new ImportValidationError(`O tópico ${index + 1} não é um objeto válido.`);
+      return {
+        id: `topic-${Date.now()}-${index + 1}`,
+        title: requiredText(topic.title, `título no tópico ${index + 1}`).slice(0, 120),
+        objective: requiredText(topic.objective, `objetivo no tópico ${index + 1}`).slice(0, 300),
+      };
+    });
+  }
+
   function parseIntro(raw) {
     const parsed = parseJSON(raw);
     if (!Array.isArray(parsed)) throw new ImportValidationError("A resposta precisa ser uma lista JSON de perguntas.");
@@ -83,5 +98,5 @@
     });
   }
 
-  global.TrilhaApp.validators = { ImportValidationError, parseIntro, parseQuiz, parseFlashcards };
+  global.TrilhaApp.validators = { ImportValidationError, parseTopics, parseIntro, parseQuiz, parseFlashcards };
 })(window);

@@ -4,7 +4,7 @@
 
   function createViewRenderer(context) {
     let state = context.getState();
-    const { theoryPrompt, introPrompt, quizPrompt, correctionPrompt, flashcardPrompt, getQuizResult, getRetryResult, getLearningSummary, wrongQuestions } = context;
+    const { topicPlanPrompt, theoryPrompt, introPrompt, quizPrompt, correctionPrompt, flashcardPrompt, getQuizResult, getRetryResult, getLearningSummary, wrongQuestions } = context;
 
     function buttonRow({ nextLabel = "Continuar", nextDisabled = false, nextAction = "advance", hideBack = false, backLabel = "Voltar" } = {}) {
       return `
@@ -23,14 +23,22 @@
     function renderSubject() {
       return `
         <span class="eyebrow">Comece por aqui</span>
-        <h1>O que você quer compreender hoje?</h1>
-        <p class="lead">Defina um assunto específico. A trilha usará essa escolha para preparar cada prompt e manter o estudo em uma sequência lógica.</p>
+        <h1>Onde este estudo se encaixa?</h1>
+        <p class="lead">Organize o percurso da visão mais ampla para a mais específica. Essa hierarquia ajudará a IA a sugerir tópicos coerentes sem fugir do assunto.</p>
         <div class="split">
           <div class="card">
             <div class="field">
+              <label for="subjectArea">Matéria</label>
+              <input id="subjectArea" data-bind="subjectArea" value="${escapeHTML(state.subjectArea)}" placeholder="Ex.: Física" autofocus />
+            </div>
+            <div class="field">
+              <label for="studyTheme">Tema</label>
+              <input id="studyTheme" data-bind="studyTheme" value="${escapeHTML(state.studyTheme)}" placeholder="Ex.: Ondulatória" />
+            </div>
+            <div class="field">
               <label for="subject">Assunto de estudo</label>
-              <input id="subject" class="subject-input" data-bind="subject" value="${escapeHTML(state.subject)}" placeholder="Ex.: Ondulatória — frequência, período e velocidade" autofocus />
-              <span class="hint">Quanto mais específico, mais útil será a sessão.</span>
+              <input id="subject" class="subject-input" data-bind="subject" value="${escapeHTML(state.subject)}" placeholder="Ex.: Frequência, período e velocidade" />
+              <span class="hint">A trilha criará os tópicos internos deste assunto.</span>
             </div>
             <div class="field">
               <label for="objective">Objetivo ou contexto <span class="hint">(opcional)</span></label>
@@ -41,22 +49,69 @@
             <h2>Como funcionará</h2>
             <p class="hint">Você continuará usando a IA de sua preferência, mas o site organizará o caminho.</p>
             <ul class="mini-list">
-              <li>Prompts prontos para cada momento</li>
+              <li>Panorama curto antes do aprofundamento</li>
+              <li>Tópicos organizados em ordem progressiva</li>
               <li>Leitura e respostas em um só percurso</li>
               <li>Resultado e revisão dos erros</li>
               <li>Flashcards e registro final da sessão</li>
             </ul>
           </aside>
         </div>
-        ${buttonRow({ hideBack: true, nextDisabled: !state.subject.trim(), nextLabel: "Criar minha trilha" })}`;
+        ${buttonRow({ hideBack: true, nextDisabled: !state.subjectArea.trim() || !state.studyTheme.trim() || !state.subject.trim(), nextLabel: "Planejar os tópicos" })}`;
+    }
+
+    function renderTopicsBuild() {
+      const outdated = state.topics.length && state.topicPlanSourceSignature !== topicPlanPrompt();
+      return `
+        <span class="eyebrow">Planejamento · Preparação</span>
+        <h1>Divida o assunto em partes estudáveis.</h1>
+        <p class="lead">A IA sugerirá apenas os tópicos internos do assunto. Na próxima tela você poderá editar, remover, adicionar e reorganizar tudo.</p>
+        ${outdated ? '<div class="notice"><span aria-hidden="true">!</span><div><strong>A configuração mudou</strong>Os tópicos atuais pertencem a uma configuração anterior. Importe um novo planejamento antes de continuar.</div></div>' : ""}
+        <div class="prepare-grid">
+          <div class="card">
+            <div class="field"><label for="topicPlanPrompt">Prompt de planejamento</label><textarea id="topicPlanPrompt" class="prompt-box" readonly>${escapeHTML(topicPlanPrompt())}</textarea></div>
+            <div class="button-group copy-row"><button class="button secondary compact" type="button" data-copy="topics">Copiar prompt</button></div>
+          </div>
+          <div class="card soft">
+            <div class="field"><label for="topicsRaw">Resposta da IA</label><textarea id="topicsRaw" class="paste-box" data-bind="topicsRaw" placeholder='Cole aqui o JSON iniciado por {"topics":…'>${escapeHTML(state.topicsRaw)}</textarea></div>
+            <div class="button-group"><button class="button secondary compact" type="button" data-action="parse-topics">Importar tópicos</button></div>
+          </div>
+        </div>
+        ${state.topics.length && !outdated ? `<div class="card blue"><h2>Planejamento reconhecido</h2><p class="hint">${state.topics.length} tópicos estão prontos para revisão.</p></div>` : ""}
+        ${buttonRow({ nextDisabled: !state.topics.length || outdated, nextLabel: "Revisar a estrutura", backLabel: "Voltar à configuração" })}`;
+    }
+
+    function renderTopicsReview() {
+      const valid = state.topics.length && state.topics.every((topic) => topic.title.trim() && topic.objective.trim());
+      return `
+        <span class="eyebrow">Planejamento · Revisão</span>
+        <h1>Ajuste o mapa antes de estudar.</h1>
+        <p class="lead">Cada tópico deve pertencer ao mesmo assunto, ter um objetivo claro e ocupar uma posição lógica no percurso.</p>
+        <div class="topic-review-list">
+          ${state.topics.map((topic, index) => `<article class="topic-review-card">
+            <div class="topic-review-heading"><span class="topic-order">${index + 1}</span><strong>Tópico ${index + 1}</strong>
+              <div class="topic-order-actions">
+                <button class="icon-button compact-icon" type="button" data-topic-move="up" data-topic-index="${index}" aria-label="Mover tópico ${index + 1} para cima" ${index === 0 ? "disabled" : ""}>↑</button>
+                <button class="icon-button compact-icon" type="button" data-topic-move="down" data-topic-index="${index}" aria-label="Mover tópico ${index + 1} para baixo" ${index === state.topics.length - 1 ? "disabled" : ""}>↓</button>
+                <button class="text-button danger" type="button" data-remove-topic="${index}" aria-label="Remover tópico ${index + 1}">Remover</button>
+              </div>
+            </div>
+            <div class="topic-fields">
+              <div class="field"><label for="topicTitle-${index}">Nome</label><input id="topicTitle-${index}" data-topic-title="${index}" value="${escapeHTML(topic.title)}" maxlength="120" /></div>
+              <div class="field"><label for="topicObjective-${index}">Objetivo do tópico</label><textarea id="topicObjective-${index}" data-topic-objective="${index}" maxlength="300">${escapeHTML(topic.objective)}</textarea></div>
+            </div>
+          </article>`).join("")}
+        </div>
+        <div class="topic-add-row"><button class="button secondary" type="button" data-action="add-topic">+ Adicionar tópico</button><span class="hint">Entre 2 e 10 tópicos.</span></div>
+        ${buttonRow({ nextDisabled: !valid, nextLabel: "Preparar panorama geral", backLabel: "Voltar à importação" })}`;
     }
     
     function renderTheoryBuild() {
       const hasDependentContent = state.introQuestions.length && state.introSourceTheory !== state.theory;
       return `
-        <span class="eyebrow">Base teórica</span>
-        <h1>Construa primeiro um bom alicerce.</h1>
-        <p class="lead">Copie o prompt, envie à IA de sua preferência e cole abaixo a resposta completa.</p>
+        <span class="eyebrow">Panorama geral · Preparação</span>
+        <h1>Comece com uma visão curta do todo.</h1>
+        <p class="lead">Este prompt limita o panorama a 400 palavras. O aprofundamento acontecerá separadamente em cada tópico.</p>
         ${hasDependentContent ? '<div class="notice"><span>!</span><div><strong>A base foi alterada</strong>As perguntas já importadas podem não representar mais este conteúdo. A etapa seguinte pedirá uma nova importação.</div></div>' : ""}
         <div class="prepare-grid">
         <div class="card">
@@ -70,7 +125,7 @@
         </div>
         <div class="card soft">
           <div class="field">
-            <label for="theory">Resposta da IA</label>
+            <label for="theory">Panorama recebido</label>
             <textarea id="theory" class="paste-box" data-bind="theory" placeholder="Cole aqui a base teórica recebida…">${escapeHTML(state.theory)}</textarea>
             <span class="hint">Aceita títulos, listas e negritos simples em Markdown.</span>
           </div>
@@ -80,9 +135,9 @@
     
     function renderReading() {
       return `
-        <span class="eyebrow">Leitura guiada</span>
-        <h1>Agora, apenas leia com calma.</h1>
-        <p class="lead">Esta etapa separa o consumo do conteúdo das atividades. Marque o avanço somente quando sentir que entendeu a estrutura geral.</p>
+        <span class="eyebrow">Panorama geral · Leitura</span>
+        <h1>Entenda o mapa antes dos detalhes.</h1>
+        <p class="lead">Observe a ideia central e como os tópicos se conectam. O objetivo aqui não é dominar cada parte ainda.</p>
         <article class="reading">${renderMarkdown(state.theory)}</article>
         ${buttonRow({ nextLabel: "Concluí a leitura", backLabel: "Voltar à preparação" })}`;
     }
@@ -375,6 +430,9 @@
           <h2>Informações gerais</h2>
           <dl class="summary-list">
             <div class="summary-row"><dt>Assunto</dt><dd>${escapeHTML(state.subject)}</dd></div>
+            <div class="summary-row"><dt>Matéria</dt><dd>${escapeHTML(state.subjectArea || "Não informada")}</dd></div>
+            <div class="summary-row"><dt>Tema</dt><dd>${escapeHTML(state.studyTheme || "Não informado")}</dd></div>
+            <div class="summary-row"><dt>Tópicos planejados</dt><dd>${state.topics.length}</dd></div>
             <div class="summary-row"><dt>Objetivo</dt><dd>${escapeHTML(state.objective || "Não informado")}</dd></div>
             <div class="summary-row"><dt>Acertos iniciais</dt><dd>${summary.quiz.correct} de ${summary.quiz.total}</dd></div>
             <div class="summary-row"><dt>Respostas comparadas</dt><dd>${summary.intro.reviewed} de ${summary.intro.total}</dd></div>
@@ -398,6 +456,8 @@
     
     const renderers = [
       renderSubject,
+      renderTopicsBuild,
+      renderTopicsReview,
       renderTheoryBuild,
       renderReading,
       renderIntroPrepare,

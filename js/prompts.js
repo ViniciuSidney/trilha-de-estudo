@@ -1,22 +1,46 @@
 (function initializePrompts(global) {
+  function studyPath(state) {
+    return [state.subjectArea, state.studyTheme, state.subject].filter(Boolean).join(" → ") || state.subject || "[ASSUNTO]";
+  }
+
+  function topicList(state) {
+    return state.topics.map((topic, index) => `${index + 1}. ${topic.title}${topic.objective ? ` — ${topic.objective}` : ""}`).join("\n");
+  }
+
+  function buildTopicPlanPrompt(state) {
+    return `Organize o estudo abaixo em tópicos essenciais e progressivos.
+
+MATÉRIA: ${state.subjectArea || "[MATÉRIA]"}
+TEMA: ${state.studyTheme || "[TEMA]"}
+ASSUNTO: ${state.subject || "[ASSUNTO]"}
+OBJETIVO: ${state.objective || "compreender o assunto com clareza"}
+
+Crie entre 3 e 7 tópicos. Cada tópico deve representar uma parte específica do mesmo assunto, sem transformar temas vizinhos em tópicos. Organize-os na melhor ordem de aprendizagem e evite sobreposição.
+
+Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, neste formato:
+{"topics":[{"title":"nome curto do tópico","objective":"o que precisa ser compreendido neste tópico"}]}`;
+  }
+
   function buildTheoryPrompt(state) {
-    return `Quero estudar o assunto: "${state.subject || "[ASSUNTO]"}".
+    return `Quero obter um panorama curto para iniciar o estudo de "${studyPath(state)}".
 
 Objetivo ou contexto do estudo: ${state.objective || "compreender o assunto com clareza e construir uma base sólida"}.
 
-Crie uma base teórica didática, correta e progressiva em português do Brasil. Considere que estou aprendendo o assunto agora. Organize a resposta em Markdown e siga esta estrutura:
-1. visão geral curta;
-2. conceitos fundamentais em ordem lógica;
-3. relações entre os conceitos;
-4. exemplos simples e concretos;
-5. erros ou confusões comuns;
-6. síntese final em até 6 tópicos.
+TÓPICOS QUE SERÃO ESTUDADOS SEPARADAMENTE:
+${topicList(state) || "Ainda não definidos"}
 
-Priorize compreensão real. Não crie exercícios ainda e não use linguagem desnecessariamente sofisticada.`;
+Escreva um resumo geral curto, claro e didático em português do Brasil, com 250 a 400 palavras. Apresente apenas a visão panorâmica do assunto e a relação entre os tópicos. Não desenvolva profundamente cada tópico, pois eles serão estudados separadamente.
+
+Use Markdown com esta estrutura:
+1. visão geral em um ou dois parágrafos;
+2. como os tópicos se conectam;
+3. síntese final em até 5 itens.
+
+Use uma tabela Markdown somente quando ela tornar uma comparação realmente mais clara. Não crie exercícios, não repita ideias e não ultrapasse 400 palavras.`;
   }
 
   function buildIntroPrompt(state) {
-    return `Com base no conteúdo teórico abaixo sobre "${state.subject}", crie 4 perguntas introdutórias discursivas em ordem crescente de dificuldade. Elas devem verificar compreensão, não memorização mecânica.
+    return `Com base no panorama abaixo sobre "${studyPath(state)}", crie 4 perguntas introdutórias discursivas em ordem crescente de dificuldade. Distribua as perguntas entre os tópicos planejados e verifique compreensão, não memorização mecânica.
 
 CONTEÚDO:
 ${state.theory}
@@ -29,7 +53,10 @@ Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, nest
 
   function buildQuizPrompt(state) {
     const introContext = state.introQuestions.map((q, i) => `P${i + 1}: ${q.question}\nResposta do aluno: ${state.introAnswers[i] || "não respondida"}`).join("\n\n");
-    return `Crie 5 questões objetivas sobre "${state.subject}", com quatro alternativas cada e somente uma correta. Misture compreensão conceitual, aplicação e uma pegadinha justa. Use a base teórica e as respostas introdutórias do aluno como contexto.
+    return `Crie 5 questões objetivas integradoras sobre "${studyPath(state)}", com quatro alternativas cada e somente uma correta. Distribua a cobertura entre os tópicos planejados e inclua ao menos uma questão que relacione dois tópicos. Misture compreensão conceitual, aplicação e uma pegadinha justa.
+
+TÓPICOS:
+${topicList(state)}
 
 BASE TEÓRICA:
 ${state.theory}
@@ -46,7 +73,7 @@ Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, nest
       const chosen = state.quizAnswers[i] || "não respondida";
       return `Questão ${i + 1}: ${q.statement}\nResposta do aluno: ${chosen}) ${q.options?.[chosen] || "—"}\nGabarito: ${q.answer}) ${q.options?.[q.answer] || "—"}\nJustificativa original: ${q.explanation || "—"}`;
     }).join("\n\n");
-    return `Atue como um tutor cuidadoso. Analise meu desempenho no estudo de "${state.subject}".
+    return `Atue como um tutor cuidadoso. Analise meu desempenho no estudo de "${studyPath(state)}".
 
 RESULTADO: ${result.correct}/${result.total} acertos (${result.percentage}%).
 
@@ -66,7 +93,7 @@ Não invente dificuldades que os dados não demonstram e explique os erros sem t
 
   function buildFlashcardPrompt(state) {
     const reflections = Object.entries(state.errorReflections).map(([i, text]) => `Erro ${Number(i) + 1}: ${text}`).join("\n");
-    return `Crie flashcards para revisar a sessão sobre "${state.subject}".
+    return `Crie flashcards para revisar a sessão sobre "${studyPath(state)}".
 
 BASE TEÓRICA:
 ${state.theory}
@@ -84,6 +111,7 @@ Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, nest
   }
 
   global.TrilhaApp.prompts = {
+    buildTopicPlanPrompt,
     buildTheoryPrompt,
     buildIntroPrompt,
     buildQuizPrompt,

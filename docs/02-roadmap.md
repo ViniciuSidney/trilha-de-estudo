@@ -73,6 +73,33 @@ A base foi aprovada em testes automatizados e manuais. A integração em `main`,
 - a aplicação permanece utilizável nos temas claro e escuro e nos tamanhos de tela testados;
 - a versão publicada possui documentação, changelog, tag e release.
 
+## v0.2.0 — estudo estruturado por tópicos
+
+### Fase 1 — hierarquia e planejamento
+
+- [x] adicionar Matéria → Tema → Assunto;
+- [x] gerar tópicos por prompt estruturado;
+- [x] permitir revisar, editar, remover, adicionar e reordenar tópicos;
+- [x] limitar o panorama geral a uma introdução curta;
+- [x] renderizar tabelas Markdown de forma segura e responsiva;
+- [x] migrar dados da v0.1.0 para `schemaVersion: 3`.
+
+### Fase 2 — trilhas individuais dos tópicos
+
+- [ ] gerar resumo curto para cada tópico;
+- [ ] registrar progresso e conteúdo por tópico;
+- [ ] adicionar perguntas de compreensão por tópico;
+- [ ] permitir retomar o tópico ativo;
+- [ ] apresentar a síntese dos tópicos concluídos.
+
+### Fase 3 — integração e desempenho
+
+- [ ] gerar exercícios abrangendo todos os tópicos;
+- [ ] identificar desempenho por tópico;
+- [ ] adaptar correção, novas tentativas e flashcards à estrutura;
+- [ ] ampliar resumo final e exportações;
+- [ ] concluir testes e documentação da v0.2.0.
+
 ## Fora do escopo da v0.1.0
 
 - integração direta com APIs de IA;

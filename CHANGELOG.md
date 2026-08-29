@@ -4,6 +4,26 @@ Todas as mudanças relevantes do projeto serão registradas neste arquivo.
 
 O formato segue os princípios do Keep a Changelog e o projeto adotará versionamento semântico a partir da v0.1.0.
 
+## [Não publicado]
+
+### Adicionado
+
+- hierarquia Matéria → Tema → Assunto → Tópicos;
+- duas telas para geração e revisão do planejamento dos tópicos;
+- edição, inclusão, remoção e reordenação dos tópicos;
+- prompt próprio para sugerir entre 3 e 7 tópicos progressivos;
+- renderização segura de tabelas Markdown com reflow interno;
+- migração automática de repositórios `schemaVersion: 2` para `schemaVersion: 3`.
+
+### Alterado
+
+- panorama geral agora solicita entre 250 e 400 palavras;
+- prompt impede aprofundamento prematuro dos tópicos;
+- perguntas e questões passam a considerar a hierarquia e os tópicos planejados;
+- trilha expandida de doze para catorze telas;
+- exportações incluem matéria, tema e tópicos planejados;
+- demonstração atualizada para a nova estrutura.
+
 ## [0.1.0] — 2026-08-29
 
 ### Adicionado

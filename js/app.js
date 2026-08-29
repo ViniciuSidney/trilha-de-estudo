@@ -1,7 +1,7 @@
-const { steps, createInitialState } = window.TrilhaApp.config;
+const { steps, STEP_INDEX, createInitialState } = window.TrilhaApp.config;
 const { createStateManager } = window.TrilhaApp.state;
 const { createSessionService } = window.TrilhaApp.sessions;
-const { buildTheoryPrompt, buildIntroPrompt, buildQuizPrompt, buildCorrectionPrompt, buildFlashcardPrompt } = window.TrilhaApp.prompts;
+const { buildTopicPlanPrompt, buildTheoryPrompt, buildIntroPrompt, buildQuizPrompt, buildCorrectionPrompt, buildFlashcardPrompt } = window.TrilhaApp.prompts;
 const navigation = window.TrilhaApp.navigation;
 const selectors = window.TrilhaApp.selectors;
 const validators = window.TrilhaApp.validators;
@@ -327,7 +327,7 @@ function goToStep(index) {
 
 function advance() {
   const patch = navigation.advance(state, steps.length);
-  if (state.currentStep === 7) patch.correctionSourceSignature = correctionPrompt();
+  if (state.currentStep === STEP_INDEX["correction-build"]) patch.correctionSourceSignature = correctionPrompt();
   if (state.currentStep === steps.length - 2) patch.finishedAt = state.finishedAt || new Date().toISOString();
   state = stateManager.updateState(patch);
   saveState();
@@ -349,6 +349,10 @@ function back() {
 
 function theoryPrompt() {
   return buildTheoryPrompt(state);
+}
+
+function topicPlanPrompt() {
+  return buildTopicPlanPrompt(state);
 }
 
 function introPrompt() {
@@ -385,6 +389,7 @@ function getLearningSummary() {
 
 viewRenderer = createViewRenderer({
   getState: () => state,
+  topicPlanPrompt,
   theoryPrompt,
   introPrompt,
   quizPrompt,
@@ -395,6 +400,61 @@ viewRenderer = createViewRenderer({
   getLearningSummary,
   wrongQuestions,
 });
+
+function resetAfterTopics() {
+  return {
+    theory: "",
+    introRaw: "",
+    introQuestions: [],
+    introSourceTheory: "",
+    introAnswers: {},
+    introReviewed: {},
+    introIndex: 0,
+    quizRaw: "",
+    quizQuestions: [],
+    quizSourceSignature: "",
+    quizAnswers: {},
+    quizRetryAnswers: {},
+    quizIndex: 0,
+    quizFinished: false,
+    consolidation: "",
+    correctionSourceSignature: "",
+    errorReflections: {},
+    errorIndex: 0,
+    flashcardsRaw: "",
+    flashcards: [],
+    flashcardIndex: 0,
+    finishedAt: "",
+  };
+}
+
+function invalidateTopicDependents() {
+  Object.assign(state, resetAfterTopics());
+  state.maxStep = Math.min(state.maxStep, STEP_INDEX["topics-review"]);
+}
+
+async function parseTopics() {
+  try {
+    const topics = validators.parseTopics(state.topicsRaw);
+    if (state.topics.length && !await confirmAction({
+      eyebrow: "Planejamento",
+      title: "Substituir os tópicos atuais?",
+      message: "O panorama, as respostas, as questões, as correções e os flashcards dependentes serão reiniciados.",
+      confirmLabel: "Substituir tópicos",
+      tone: "warning",
+    })) return;
+    updateState({
+      topics,
+      topicIndex: 0,
+      topicPlanSourceSignature: topicPlanPrompt(),
+      ...resetAfterTopics(),
+      maxStep: Math.min(state.maxStep, STEP_INDEX["topics-review"]),
+    }, true);
+    showToast(`${topics.length} tópicos importados.`);
+  } catch (error) {
+    showToast(error.message || "Não foi possível importar os tópicos.", "error");
+  }
+}
 
 async function parseIntro() {
   try {
@@ -427,7 +487,7 @@ async function parseIntro() {
       flashcards: [],
       flashcardIndex: 0,
       finishedAt: "",
-      maxStep: Math.min(state.maxStep, 4),
+      maxStep: Math.min(state.maxStep, STEP_INDEX["intro-answer"]),
     }, true);
     showToast(`${parsed.length} perguntas importadas.`);
   } catch (error) {
@@ -460,7 +520,7 @@ async function parseQuiz() {
       flashcards: [],
       flashcardIndex: 0,
       finishedAt: "",
-      maxStep: Math.min(state.maxStep, 6),
+      maxStep: Math.min(state.maxStep, STEP_INDEX["quiz-answer"]),
     }, true);
     showToast(`${questions.length} questões importadas.`);
   } catch (error) {
@@ -478,7 +538,7 @@ async function parseFlashcards() {
       confirmLabel: "Substituir cartões",
       tone: "warning",
     })) return;
-    updateState({ flashcards: cards, flashcardIndex: 0, finishedAt: "", maxStep: Math.min(state.maxStep, 10) }, true);
+    updateState({ flashcards: cards, flashcardIndex: 0, finishedAt: "", maxStep: Math.min(state.maxStep, STEP_INDEX["flashcards-review"]) }, true);
     showToast(`${cards.length} flashcards importados.`);
   } catch (error) {
     showToast(error.message || "Não foi possível importar os flashcards.", "error");
@@ -542,16 +602,16 @@ function bindDynamicEvents() {
     el.addEventListener("input", () => {
       const previousValue = state[el.dataset.bind];
       state[el.dataset.bind] = el.value;
-      if (previousValue !== el.value && el.dataset.bind === "theory" && state.maxStep > 2) {
-        state.maxStep = 2;
+      if (previousValue !== el.value && el.dataset.bind === "theory" && state.maxStep > STEP_INDEX["theory-read"]) {
+        state.maxStep = STEP_INDEX["theory-read"];
         state.finishedAt = "";
       }
-      if (previousValue !== el.value && ["subject", "objective"].includes(el.dataset.bind) && state.maxStep > 0) {
+      if (previousValue !== el.value && ["subjectArea", "studyTheme", "subject", "objective"].includes(el.dataset.bind) && state.maxStep > 0) {
         state.maxStep = 0;
         state.finishedAt = "";
       }
-      if (previousValue !== el.value && el.dataset.bind === "consolidation" && state.maxStep > 7) {
-        state.maxStep = 7;
+      if (previousValue !== el.value && el.dataset.bind === "consolidation" && state.maxStep > STEP_INDEX["correction-build"]) {
+        state.maxStep = STEP_INDEX["correction-build"];
         state.flashcardsRaw = "";
         state.flashcards = [];
         state.flashcardIndex = 0;
@@ -559,19 +619,36 @@ function bindDynamicEvents() {
       }
       if (el.dataset.bind === "subject") sidebarSubject.textContent = el.value || "Ainda sem assunto";
       saveState();
-      if (el.dataset.bind === "subject") {
+      if (["subjectArea", "studyTheme", "subject"].includes(el.dataset.bind)) {
         const next = screenActions.querySelector('[data-action="advance"]');
-        if (next) next.disabled = !el.value.trim();
+        if (next) next.disabled = !state.subjectArea.trim() || !state.studyTheme.trim() || !state.subject.trim();
       }
       updateContinueAvailability();
     });
   });
 
+  screen.querySelectorAll("[data-topic-title]").forEach((el) => el.addEventListener("input", () => {
+    const topic = state.topics[Number(el.dataset.topicTitle)];
+    if (!topic) return;
+    if (topic.title !== el.value) invalidateTopicDependents();
+    topic.title = el.value;
+    saveState();
+    updateContinueAvailability();
+  }));
+  screen.querySelectorAll("[data-topic-objective]").forEach((el) => el.addEventListener("input", () => {
+    const topic = state.topics[Number(el.dataset.topicObjective)];
+    if (!topic) return;
+    if (topic.objective !== el.value) invalidateTopicDependents();
+    topic.objective = el.value;
+    saveState();
+    updateContinueAvailability();
+  }));
+
   screen.querySelectorAll("[data-intro-answer]").forEach((el) => el.addEventListener("input", () => {
     const index = el.dataset.introAnswer;
     if (state.introAnswers[index] !== el.value) {
       state.introReviewed[index] = false;
-      if (state.maxStep > 4) state.maxStep = 4;
+      if (state.maxStep > STEP_INDEX["intro-answer"]) state.maxStep = STEP_INDEX["intro-answer"];
       state.finishedAt = "";
       const reviewButton = screen.querySelector("[data-review-intro-button]");
       if (reviewButton) {
@@ -609,7 +686,7 @@ function bindDynamicEvents() {
       state.flashcards = [];
       state.flashcardIndex = 0;
       state.finishedAt = "";
-      state.maxStep = Math.min(state.maxStep, 6);
+      state.maxStep = Math.min(state.maxStep, STEP_INDEX["quiz-answer"]);
       showToast("Etapas dependentes foram reiniciadas.");
     }
     saveState();
@@ -617,8 +694,8 @@ function bindDynamicEvents() {
   }));
   screen.querySelectorAll("[data-retry-answer]").forEach((el) => el.addEventListener("change", () => {
     state.quizRetryAnswers[el.dataset.retryAnswer] = el.value;
-    if (state.maxStep > 8) {
-      state.maxStep = 8;
+    if (state.maxStep > STEP_INDEX["correction-result"]) {
+      state.maxStep = STEP_INDEX["correction-result"];
       state.flashcardsRaw = "";
       state.flashcards = [];
       state.flashcardIndex = 0;
@@ -630,8 +707,8 @@ function bindDynamicEvents() {
   }));
   screen.querySelectorAll("[data-error-reflection]").forEach((el) => el.addEventListener("input", () => {
     state.errorReflections[el.dataset.errorReflection] = el.value;
-    if (state.maxStep > 8) {
-      state.maxStep = 8;
+    if (state.maxStep > STEP_INDEX["correction-result"]) {
+      state.maxStep = STEP_INDEX["correction-result"];
       state.flashcardsRaw = "";
       state.flashcards = [];
       state.flashcardIndex = 0;
@@ -655,12 +732,14 @@ function bindDynamicEvents() {
 function updateContinueAvailability() {
   const button = screenActions.querySelector('[data-action="advance"], [data-action="finish-quiz"]');
   if (!button) return;
-  if (state.currentStep === 1) button.disabled = state.theory.trim().length < 80;
-  if (state.currentStep === 4) button.disabled = !state.introQuestions.length || !state.introQuestions.every((_, i) => (state.introAnswers[i] || "").trim() && state.introReviewed?.[i]);
-  if (state.currentStep === 6) button.disabled = !state.quizQuestions.length || !state.quizQuestions.every((_, i) => state.quizAnswers[i]);
-  if (state.currentStep === 7) button.disabled = state.consolidation.trim().length < 50;
-  if (state.currentStep === 8) button.disabled = wrongQuestions().some(({ index }) => (state.errorReflections[index] || "").trim().length < 20 || !state.quizRetryAnswers?.[index]);
-  if (state.currentStep === 10) button.disabled = !state.flashcards.length || state.flashcards.some((card) => !card.front.trim() || !card.back.trim());
+  if (state.currentStep === STEP_INDEX.subject) button.disabled = !state.subjectArea.trim() || !state.studyTheme.trim() || !state.subject.trim();
+  if (state.currentStep === STEP_INDEX["topics-review"]) button.disabled = !state.topics.length || state.topics.some((topic) => !topic.title.trim() || !topic.objective.trim());
+  if (state.currentStep === STEP_INDEX["theory-build"]) button.disabled = state.theory.trim().length < 80;
+  if (state.currentStep === STEP_INDEX["intro-answer"]) button.disabled = !state.introQuestions.length || !state.introQuestions.every((_, i) => (state.introAnswers[i] || "").trim() && state.introReviewed?.[i]);
+  if (state.currentStep === STEP_INDEX["quiz-answer"]) button.disabled = !state.quizQuestions.length || !state.quizQuestions.every((_, i) => state.quizAnswers[i]);
+  if (state.currentStep === STEP_INDEX["correction-build"]) button.disabled = state.consolidation.trim().length < 50;
+  if (state.currentStep === STEP_INDEX["correction-result"]) button.disabled = wrongQuestions().some(({ index }) => (state.errorReflections[index] || "").trim().length < 20 || !state.quizRetryAnswers?.[index]);
+  if (state.currentStep === STEP_INDEX["flashcards-review"]) button.disabled = !state.flashcards.length || state.flashcards.some((card) => !card.front.trim() || !card.back.trim());
 }
 
 function finishQuiz() {
@@ -786,11 +865,36 @@ document.addEventListener("click", (event) => {
     return setItemIndex(itemButton.dataset.itemKind, Number(itemButton.dataset.itemIndex));
   }
 
+  const topicMove = event.target.closest("[data-topic-move]");
+  if (topicMove && !topicMove.disabled) {
+    const from = Number(topicMove.dataset.topicIndex);
+    const to = topicMove.dataset.topicMove === "up" ? from - 1 : from + 1;
+    if (to >= 0 && to < state.topics.length) {
+      [state.topics[from], state.topics[to]] = [state.topics[to], state.topics[from]];
+      invalidateTopicDependents();
+      saveState();
+      render();
+      screen.querySelector(`[data-topic-index="${to}"][data-topic-move="${topicMove.dataset.topicMove}"]`)?.focus();
+    }
+    return;
+  }
+
+  const topicRemove = event.target.closest("[data-remove-topic]");
+  if (topicRemove) {
+    if (state.topics.length <= 2) return showToast("A trilha precisa manter pelo menos dois tópicos.", "error");
+    state.topics.splice(Number(topicRemove.dataset.removeTopic), 1);
+    invalidateTopicDependents();
+    saveState();
+    render();
+    return showToast("Tópico removido.");
+  }
+
   const actionButton = event.target.closest("[data-action]");
   if (actionButton) {
     const action = actionButton.dataset.action;
     if (action === "advance") advance();
     if (action === "back") back();
+    if (action === "parse-topics") parseTopics();
     if (action === "parse-intro") parseIntro();
     if (action === "review-intro") reviewIntroAnswer();
     if (action === "parse-quiz") parseQuiz();
@@ -802,6 +906,14 @@ document.addEventListener("click", (event) => {
       saveState();
       render();
     }
+    if (action === "add-topic") {
+      if (state.topics.length >= 10) return showToast("O limite é de 10 tópicos.", "error");
+      state.topics.push({ id: `topic-${Date.now()}`, title: "", objective: "" });
+      invalidateTopicDependents();
+      saveState();
+      render();
+      screen.querySelector(`[data-topic-title="${state.topics.length - 1}"]`)?.focus();
+    }
     if (action === "export" || action === "export-text") exportSession("text");
     if (action === "export-json") exportSession("json");
     if (action === "print") window.print();
@@ -809,7 +921,7 @@ document.addEventListener("click", (event) => {
 
   const copyButton = event.target.closest("[data-copy]");
   if (copyButton) {
-    const prompts = { theory: theoryPrompt, intro: introPrompt, quiz: quizPrompt, correction: correctionPrompt, flashcards: flashcardPrompt };
+    const prompts = { topics: topicPlanPrompt, theory: theoryPrompt, intro: introPrompt, quiz: quizPrompt, correction: correctionPrompt, flashcards: flashcardPrompt };
     copyText(prompts[copyButton.dataset.copy]());
   }
 
@@ -818,8 +930,8 @@ document.addEventListener("click", (event) => {
     state.flashcards.splice(Number(removeButton.dataset.removeCard), 1);
     if (!state.flashcards.length) {
       state.flashcardIndex = 0;
-      state.currentStep = 9;
-      state.maxStep = Math.min(state.maxStep, 9);
+      state.currentStep = STEP_INDEX["flashcards-build"];
+      state.maxStep = Math.min(state.maxStep, STEP_INDEX["flashcards-build"]);
       showToast("Todos os cartões foram removidos. Importe ou crie um novo conjunto.");
     } else {
       state.flashcardIndex = Math.min(state.flashcardIndex, state.flashcards.length - 1);

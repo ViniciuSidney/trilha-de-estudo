@@ -1,6 +1,6 @@
 (function initializeDemo(global) {
-  const { createInitialState } = global.TrilhaApp.config;
-  const { buildQuizPrompt, buildCorrectionPrompt } = global.TrilhaApp.prompts;
+  const { steps, createInitialState } = global.TrilhaApp.config;
+  const { buildTopicPlanPrompt, buildQuizPrompt, buildCorrectionPrompt } = global.TrilhaApp.prompts;
   const { getQuizResult } = global.TrilhaApp.selectors;
 
   function createDemoState(theme) {
@@ -18,11 +18,22 @@
       { id: 4, statement: "Ao passar para outro meio, mantendo a frequência, a velocidade da onda diminui. O comprimento de onda:", options: { A: "aumenta", B: "diminui", C: "não muda", D: "torna-se zero" }, answer: "B", explanation: "Como λ = v/f e f permanece, a diminuição de v reduz λ." },
       { id: 5, statement: "Qual afirmação está correta?", options: { A: "Maior amplitude sempre significa maior velocidade", B: "Frequência e velocidade são a mesma grandeza", C: "Ondas transportam permanentemente a matéria do meio", D: "Frequência indica oscilações por segundo" }, answer: "D", explanation: "A definição de frequência é a quantidade de oscilações por segundo." },
     ];
+    const topics = [
+      { id: "topic-demo-1", title: "Natureza das ondas", objective: "Compreender o que uma onda transporta e como ela se propaga." },
+      { id: "topic-demo-2", title: "Frequência e período", objective: "Relacionar oscilações por segundo ao tempo de cada oscilação." },
+      { id: "topic-demo-3", title: "Comprimento e velocidade", objective: "Aplicar v = λ · f e interpretar mudanças de meio." },
+    ];
     const state = {
       ...createInitialState(),
+      currentStep: 0,
+      maxStep: steps.length - 1,
       theme,
-      subject: "Ondulatória — frequência, período e velocidade",
+      subjectArea: "Física",
+      studyTheme: "Ondulatória",
+      subject: "Frequência, período e velocidade",
       objective: "Compreender as relações entre as grandezas e preparar-me para uma prova.",
+      topicsRaw: JSON.stringify({ topics: topics.map(({ title, objective }) => ({ title, objective })) }, null, 2),
+      topics,
       theory,
       introRaw: JSON.stringify(introQuestions, null, 2),
       introQuestions,
@@ -49,6 +60,7 @@
         { front: "Frequência e velocidade são a mesma coisa?", back: "Não. Frequência mede oscilações por segundo; velocidade mede propagação no meio.", tags: ["ondulatória", "pegadinha"] },
       ],
     };
+    state.topicPlanSourceSignature = buildTopicPlanPrompt(state);
     state.quizSourceSignature = buildQuizPrompt(state);
     state.correctionSourceSignature = buildCorrectionPrompt(state, getQuizResult(state));
     return state;

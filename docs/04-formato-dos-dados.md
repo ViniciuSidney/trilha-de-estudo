@@ -44,7 +44,7 @@ A primeira fundação modular utilizou temporariamente um envelope com uma únic
 
 Esse formato também é migrado automaticamente para o modelo atual.
 
-## Armazenamento atual — schemaVersion 2
+## Armazenamento da v0.1.0 — schemaVersion 2
 
 ```json
 {
@@ -143,3 +143,35 @@ Além do backup completo, cada sessão pode ser exportada isoladamente em TXT ou
 ```
 
 O TXT prioriza leitura humana. O JSON preserva metadados, resumo calculado e o estado completo para integrações futuras, mas não funciona como substituto do backup geral.
+
+## Armazenamento da v0.2.0 — schemaVersion 3
+
+O `schemaVersion: 3` preserva o repositório de múltiplas sessões e adiciona ao estado:
+
+```json
+{
+  "subjectArea": "Física",
+  "studyTheme": "Ondulatória",
+  "subject": "Frequência, período e velocidade",
+  "topicsRaw": "{...}",
+  "topics": [
+    {
+      "id": "topic-1",
+      "title": "Frequência e período",
+      "objective": "Relacionar oscilações por segundo ao tempo de cada oscilação."
+    }
+  ],
+  "topicPlanSourceSignature": "prompt usado na geração",
+  "topicIndex": 0
+}
+```
+
+- `subjectArea` representa a matéria;
+- `studyTheme` representa o tema, sem conflitar com o campo visual `theme`;
+- `subject` permanece como o assunto específico;
+- `topicsRaw` preserva a resposta original da IA;
+- `topics` contém a estrutura revisada pelo estudante;
+- `topicPlanSourceSignature` detecta alterações na configuração;
+- `topicIndex` será usado pela trilha individual da próxima fase.
+
+Ao carregar `schemaVersion: 2`, as posições posteriores à configuração são deslocadas em duas telas para preservar a etapa equivalente. Os novos campos recebem valores iniciais seguros e o repositório migrado é salvo imediatamente.
