@@ -56,6 +56,14 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 
 A base candidata à release possui testes automatizados e checklist manual. Os dois itens restantes dependem da validação em navegadores reais e da aprovação da branch `dev` antes da integração em `main`.
 
+### Fase 5.1 — refinamento pré-release
+
+- [x] substituir confirmações e entradas nativas por modais próprios;
+- [x] manter foco, teclado e semântica acessível nos novos diálogos;
+- [x] tornar a correção imediata mais visual e explicativa;
+- [x] ajustar distâncias entre campos, ações e painéis;
+- [x] revisar a interface preservando os componentes já aprovados.
+
 ## Critérios de conclusão
 
 - o fluxo completo do protótipo continua funcional;

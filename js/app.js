@@ -20,6 +20,7 @@ let toastTimer;
 let viewRenderer;
 let pendingBackup = null;
 let focusBeforeModal = null;
+let actionDialogState = null;
 
 const screen = document.querySelector("#screen");
 const screenContent = document.querySelector("#screenContent");
@@ -39,6 +40,18 @@ const backupFileInput = document.querySelector("#backupFileInput");
 const backupModal = document.querySelector("#backupModal");
 const backupPreview = document.querySelector("#backupPreview");
 const restoreBackupButton = document.querySelector("#restoreBackupButton");
+const actionModal = document.querySelector("#actionModal");
+const actionModalPanel = actionModal.querySelector(".action-modal-panel");
+const actionModalEyebrow = document.querySelector("#actionModalEyebrow");
+const actionModalTitle = document.querySelector("#actionModalTitle");
+const actionModalMessage = document.querySelector("#actionModalMessage");
+const actionModalIcon = document.querySelector("#actionModalIcon");
+const actionModalField = document.querySelector("#actionModalField");
+const actionModalInputLabel = document.querySelector("#actionModalInputLabel");
+const actionModalInput = document.querySelector("#actionModalInput");
+const actionModalHint = document.querySelector("#actionModalHint");
+const actionModalCancel = document.querySelector("#actionModalCancel");
+const actionModalConfirm = document.querySelector("#actionModalConfirm");
 const appShell = document.querySelector(".app-shell");
 const menuButton = document.querySelector("#menuButton");
 const menuBackdrop = document.querySelector("#menuBackdrop");
@@ -150,8 +163,9 @@ function syncResponsiveNavigation() {
 }
 
 function trapModalFocus(event) {
-  if (backupModal.hidden || event.key !== "Tab") return;
-  const focusable = [...backupModal.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), [tabindex]:not([tabindex="-1"])')]
+  const activeModal = [backupModal, actionModal].find((modal) => !modal.hidden);
+  if (!activeModal || event.key !== "Tab") return;
+  const focusable = [...activeModal.querySelectorAll('button:not(:disabled), [href], input:not(:disabled), [tabindex]:not([tabindex="-1"])')]
     .filter((element) => !element.hidden);
   if (!focusable.length) return;
   const first = focusable[0];
@@ -163,6 +177,62 @@ function trapModalFocus(event) {
     event.preventDefault();
     first.focus();
   }
+}
+
+function openActionDialog({
+  eyebrow = "Confirmação",
+  title = "Confirmar ação",
+  message,
+  confirmLabel = "Confirmar",
+  cancelLabel = "Cancelar",
+  tone = "warning",
+  icon = "!",
+  input = null,
+}) {
+  if (actionDialogState) return Promise.resolve(input ? null : false);
+  focusBeforeModal = document.activeElement;
+  actionModalEyebrow.textContent = eyebrow;
+  actionModalTitle.textContent = title;
+  actionModalMessage.textContent = message;
+  actionModalIcon.textContent = icon;
+  actionModalConfirm.textContent = confirmLabel;
+  actionModalCancel.textContent = cancelLabel;
+  actionModalPanel.dataset.tone = tone;
+  actionModalField.hidden = !input;
+  actionModalInput.value = input?.value || "";
+  actionModalInputLabel.textContent = input?.label || "Novo valor";
+  actionModalHint.textContent = input?.hint || "";
+  actionModalConfirm.disabled = Boolean(input && !actionModalInput.value.trim());
+  actionModal.hidden = false;
+  document.body.classList.add("modal-open");
+  appShell.inert = true;
+
+  return new Promise((resolve) => {
+    actionDialogState = { resolve, hasInput: Boolean(input) };
+    (input ? actionModalInput : actionModalConfirm).focus();
+    if (input) actionModalInput.select();
+  });
+}
+
+function closeActionDialog(confirmed = false) {
+  if (!actionDialogState) return;
+  const { resolve, hasInput } = actionDialogState;
+  const value = confirmed ? (hasInput ? actionModalInput.value.trim() : true) : (hasInput ? null : false);
+  actionDialogState = null;
+  actionModal.hidden = true;
+  document.body.classList.remove("modal-open");
+  appShell.inert = false;
+  resolve(value);
+  if (focusBeforeModal?.isConnected) focusBeforeModal.focus();
+  focusBeforeModal = null;
+}
+
+function confirmAction(options) {
+  return openActionDialog(options);
+}
+
+function requestText(options) {
+  return openActionDialog({ ...options, input: options.input || {} });
 }
 
 function closeBackupPreview() {
@@ -326,10 +396,16 @@ viewRenderer = createViewRenderer({
   wrongQuestions,
 });
 
-function parseIntro() {
+async function parseIntro() {
   try {
     const parsed = validators.parseIntro(state.introRaw);
-    if (state.introQuestions.length && !window.confirm("Substituir as perguntas importadas? As respostas e todas as etapas dependentes delas serão apagadas.")) return;
+    if (state.introQuestions.length && !await confirmAction({
+      eyebrow: "Perguntas iniciais",
+      title: "Substituir perguntas importadas?",
+      message: "As respostas, comparações e todas as etapas que dependem destas perguntas serão reiniciadas.",
+      confirmLabel: "Substituir perguntas",
+      tone: "warning",
+    })) return;
     updateState({
       introQuestions: parsed,
       introAnswers: {},
@@ -359,10 +435,16 @@ function parseIntro() {
   }
 }
 
-function parseQuiz() {
+async function parseQuiz() {
   try {
     const questions = validators.parseQuiz(state.quizRaw);
-    if (state.quizQuestions.length && !window.confirm("Substituir as questões? As respostas, o resultado e as correções posteriores serão apagados.")) return;
+    if (state.quizQuestions.length && !await confirmAction({
+      eyebrow: "Questões objetivas",
+      title: "Substituir questões atuais?",
+      message: "As respostas, o resultado inicial, a devolutiva, as correções e os flashcards dependentes serão reiniciados.",
+      confirmLabel: "Substituir questões",
+      tone: "warning",
+    })) return;
     updateState({
       quizQuestions: questions,
       quizAnswers: {},
@@ -386,10 +468,16 @@ function parseQuiz() {
   }
 }
 
-function parseFlashcards() {
+async function parseFlashcards() {
   try {
     const cards = validators.parseFlashcards(state.flashcardsRaw);
-    if (state.flashcards.length && !window.confirm("Substituir os flashcards atuais? As edições feitas neles serão perdidas.")) return;
+    if (state.flashcards.length && !await confirmAction({
+      eyebrow: "Flashcards",
+      title: "Substituir flashcards atuais?",
+      message: "As edições realizadas nos cartões atuais serão descartadas e substituídas pelo novo conjunto importado.",
+      confirmLabel: "Substituir cartões",
+      tone: "warning",
+    })) return;
     updateState({ flashcards: cards, flashcardIndex: 0, finishedAt: "", maxStep: Math.min(state.maxStep, 10) }, true);
     showToast(`${cards.length} flashcards importados.`);
   } catch (error) {
@@ -496,10 +584,16 @@ function bindDynamicEvents() {
     saveState();
     updateContinueAvailability();
   }));
-  screen.querySelectorAll("[data-quiz-answer]").forEach((el) => el.addEventListener("change", () => {
+  screen.querySelectorAll("[data-quiz-answer]").forEach((el) => el.addEventListener("change", async () => {
     const index = el.dataset.quizAnswer;
     const changingFinishedQuiz = state.quizFinished && state.quizAnswers[index] !== el.value;
-    if (changingFinishedQuiz && !window.confirm("Alterar uma resposta inicial apagará a devolutiva, as correções, as novas tentativas e os flashcards desta sessão. Continuar?")) {
+    if (changingFinishedQuiz && !await confirmAction({
+      eyebrow: "Resultado já calculado",
+      title: "Alterar a resposta inicial?",
+      message: "Para manter o resultado consistente, a devolutiva, as correções, as novas tentativas e os flashcards desta sessão serão reiniciados.",
+      confirmLabel: "Alterar e reiniciar",
+      tone: "warning",
+    })) {
       render();
       return;
     }
@@ -606,9 +700,16 @@ function loadDemo() {
   focusScreenHeading();
 }
 
-function resetSession() {
+async function resetSession() {
   if (!sessionService.getActiveSession()) return createNewSession();
-  if (!window.confirm("Deseja apagar a sessão salva neste navegador e recomeçar?")) return;
+  if (!await confirmAction({
+    eyebrow: "Recomeçar sessão",
+    title: "Apagar o progresso desta sessão?",
+    message: "Todo o conteúdo desta sessão será removido e ela voltará à definição do assunto. Esta ação não afeta as outras sessões.",
+    confirmLabel: "Apagar e recomeçar",
+    tone: "danger",
+    icon: "×",
+  })) return;
   state = stateManager.replaceState(sessionService.restartActiveSession());
   applyTheme();
   render();
@@ -616,13 +717,25 @@ function resetSession() {
   focusScreenHeading();
 }
 
-function handleSessionAction(action, id) {
+async function handleSessionAction(action, id) {
   const session = sessionService.findSession(id);
   if (!session) return showToast("A sessão não foi encontrada.");
 
   if (action === "open") return openSession(id);
   if (action === "rename") {
-    const title = window.prompt("Novo nome para a sessão:", sessionName(session));
+    const title = await requestText({
+      eyebrow: "Organização",
+      title: "Renomear sessão",
+      message: "Escolha um nome curto que facilite encontrar este estudo no histórico.",
+      confirmLabel: "Salvar nome",
+      tone: "default",
+      icon: "✎",
+      input: {
+        label: "Nome da sessão",
+        value: sessionName(session),
+        hint: "Até 90 caracteres.",
+      },
+    });
     if (title === null) return;
     const result = sessionService.renameSession(id, title);
     showToast(result.ok ? "Sessão renomeada." : "Digite um nome válido.");
@@ -633,7 +746,14 @@ function handleSessionAction(action, id) {
   }
   if (action === "delete") {
     const name = sessionName(session);
-    if (!window.confirm(`Excluir permanentemente a sessão "${name}"?`)) return;
+    if (!await confirmAction({
+      eyebrow: "Excluir sessão",
+      title: "Excluir esta sessão permanentemente?",
+      message: `“${name}” e todo o seu conteúdo serão removidos deste navegador. Esta ação não pode ser desfeita.`,
+      confirmLabel: "Excluir sessão",
+      tone: "danger",
+      icon: "×",
+    })) return;
     sessionService.deleteSession(id);
     showToast("Sessão excluída.");
   }
@@ -641,6 +761,9 @@ function handleSessionAction(action, id) {
 }
 
 document.addEventListener("click", (event) => {
+  const dialogCancel = event.target.closest("[data-dialog-cancel]");
+  if (dialogCancel) return closeActionDialog(false);
+
   const backupClose = event.target.closest("[data-backup-close]");
   if (backupClose) return closeBackupPreview();
 
@@ -713,14 +836,31 @@ homeButton.addEventListener("click", leaveCurrentSession);
 themeButton.addEventListener("click", toggleTheme);
 backupFileInput.addEventListener("change", () => inspectBackupFile(backupFileInput.files[0]));
 restoreBackupButton.addEventListener("click", restoreCompleteBackup);
+actionModalConfirm.addEventListener("click", () => closeActionDialog(true));
+actionModalInput.addEventListener("input", () => {
+  actionModalConfirm.disabled = !actionModalInput.value.trim();
+});
+actionModalInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !actionModalConfirm.disabled) {
+    event.preventDefault();
+    closeActionDialog(true);
+  }
+});
 document.addEventListener("keydown", (event) => {
   trapModalFocus(event);
   if (event.key !== "Escape") return;
+  if (!actionModal.hidden) return closeActionDialog(false);
   if (!backupModal.hidden) return closeBackupPreview();
   if (document.body.classList.contains("menu-open")) setMobileMenu(false, { returnFocus: true });
 });
-document.querySelector("#demoButton").addEventListener("click", () => {
-  if (!sessionService.getActiveSession() || !state.subject || window.confirm("A demonstração substituirá somente a sessão atual. Continuar?")) loadDemo();
+document.querySelector("#demoButton").addEventListener("click", async () => {
+  if (!sessionService.getActiveSession() || !state.subject || await confirmAction({
+    eyebrow: "Demonstração",
+    title: "Carregar a sessão demonstrativa?",
+    message: "O conteúdo da sessão atual será substituído pelo exemplo completo de Ondulatória. Suas outras sessões permanecerão intactas.",
+    confirmLabel: "Carregar demonstração",
+    tone: "warning",
+  })) loadDemo();
 });
 document.querySelector("#resetButton").addEventListener("click", resetSession);
 

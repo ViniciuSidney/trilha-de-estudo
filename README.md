@@ -33,6 +33,8 @@ Aplicação web local-first que conduz uma sessão de estudo em uma sequência l
 - temas claro e escuro;
 - interface responsiva em viewport única;
 - navegação por teclado, foco visível e semântica acessível;
+- modais próprios para confirmações, ações destrutivas e renomeação;
+- correção imediata com comparação visual entre escolha e gabarito;
 - salvamento automático no navegador;
 - exportação individual da sessão em TXT e JSON.
 

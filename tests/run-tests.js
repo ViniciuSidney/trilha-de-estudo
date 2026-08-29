@@ -125,18 +125,25 @@ test("renderiza as doze telas com semântica de navegação", () => {
   assert.match(renderer.renderNav(), /aria-current="step"/);
   state.currentStep = 6;
   assert.match(renderer.renderScreen(6), /<fieldset class="option-group">/);
+  state.currentStep = 7;
+  const correction = renderer.renderScreen(7);
+  assert.match(correction, /class="results-list"/);
+  assert.match(correction, /class="answer-choice/);
 });
 
 test("inclui recursos essenciais de acessibilidade e reflow", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const css = fs.readFileSync(path.join(root, "css/styles.css"), "utf8");
+  const appSource = fs.readFileSync(path.join(root, "js/app.js"), "utf8");
   assert.match(html, /class="skip-link"/);
   assert.match(html, /role="progressbar"/);
   assert.match(html, /aria-modal="true"/);
+  assert.match(html, /id="actionModal"/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(css, /max-width: 920px/);
   assert.match(css, /max-width: 650px/);
+  assert.doesNotMatch(appSource, /window\.(confirm|prompt)/);
 });
 
 function optionValue(flag) {

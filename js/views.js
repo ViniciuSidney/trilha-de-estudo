@@ -202,15 +202,33 @@
         </div>
         <div class="card">
           <h2>Correção imediata</h2>
+          <p class="hint">Compare sua escolha com o gabarito e entenda o raciocínio de cada questão.</p>
+          <div class="results-list">
           ${state.quizQuestions.map((q, i) => {
             const chosen = state.quizAnswers[i];
             const correct = chosen === q.answer;
-            return `<div class="result-item">
-              <span class="result-tag ${correct ? "correct" : "wrong"}">${correct ? "Acertou" : "Rever"}</span>
-              <p>${escapeHTML(q.statement)}</p>
-              <small>Sua resposta: ${escapeHTML(chosen)} · Correta: ${escapeHTML(q.answer)} — ${escapeHTML(q.explanation || "Sem justificativa")}</small>
-            </div>`;
+            const chosenText = q.options[chosen] || "Não respondida";
+            const correctText = q.options[q.answer] || "Resposta não informada";
+            return `<article class="result-card ${correct ? "correct" : "wrong"}">
+              <div class="result-card-header">
+                <span class="question-index">Questão ${i + 1}</span>
+                <span class="result-tag ${correct ? "correct" : "wrong"}">${correct ? "Você acertou" : "Precisa revisar"}</span>
+              </div>
+              <p class="result-statement">${escapeHTML(q.statement)}</p>
+              <div class="answer-comparison ${correct ? "single" : ""}">
+                <div class="answer-choice ${correct ? "correct" : "wrong"}">
+                  <span class="answer-choice-label">${correct ? "Sua resposta · correta" : "Sua escolha"}</span>
+                  <strong>${escapeHTML(chosen)}. ${escapeHTML(chosenText)}</strong>
+                </div>
+                ${correct ? "" : `<div class="answer-choice correct">
+                  <span class="answer-choice-label">Resposta correta</span>
+                  <strong>${escapeHTML(q.answer)}. ${escapeHTML(correctText)}</strong>
+                </div>`}
+              </div>
+              <div class="result-explanation"><span aria-hidden="true">i</span><p><strong>Entenda:</strong> ${escapeHTML(q.explanation || "A IA não forneceu uma justificativa para esta questão.")}</p></div>
+            </article>`;
           }).join("")}
+          </div>
         </div>
         <div class="prepare-grid">
         <div class="card yellow">

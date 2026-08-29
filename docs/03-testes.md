@@ -32,6 +32,9 @@ Confirmar que o fluxo principal permanece utilizável, que os dados são preserv
 - [x] validar uma exportação individual real em TXT e JSON;
 - [x] verificar marcação semântica de progresso, etapas, grupos de alternativas e diálogo;
 - [x] verificar breakpoints, foco visível e preferência por movimento reduzido no CSS.
+- [x] confirmar a ausência de `confirm()` e `prompt()` nativos no código;
+- [x] renderizar a correção imediata com escolha, gabarito e justificativa separados;
+- [x] verificar a estrutura do modal reutilizável de confirmação e entrada.
 
 O teste visual e interativo em navegador real permanece obrigatório após alterações de interface ou integração entre módulos.
 
@@ -117,6 +120,14 @@ O teste visual e interativo em navegador real permanece obrigatório após alter
 - [ ] confirmar associação entre labels e campos;
 - [ ] conferir contraste nos dois temas;
 - [ ] testar zoom de 200%;
+
+### Modais próprios
+
+- [ ] abrir cada confirmação destrutiva e cancelar pelo botão;
+- [ ] fechar os modais com `Esc` e pelo backdrop;
+- [ ] confirmar que `Tab` e `Shift+Tab` permanecem dentro do modal;
+- [ ] renomear uma sessão e confirmar que nomes vazios não podem ser salvos;
+- [ ] conferir o retorno do foco ao botão que abriu o modal.
 
 O roteiro final por tamanho de tela está em [`07-checklist-release.md`](07-checklist-release.md). As verificações marcadas nesta seção continuam manuais porque dependem de navegador, sistema operacional e tecnologias assistivas reais.
 

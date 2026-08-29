@@ -29,14 +29,16 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - armazenamento interno com `schemaVersion: 2`;
 - migração automática do estado plano do protótipo;
 - migração automática do envelope `schemaVersion: 1`;
-- normalização de campos essenciais antes de carregar ou salvar.
+- normalização de campos essenciais antes de carregar ou salvar;
 - link de salto para o conteúdo principal;
 - semântica de progresso, etapa atual, grupos de alternativas e mensagens de estado;
 - controle de foco no menu móvel e no diálogo de restauração;
 - suporte à preferência de movimento reduzido e a cores forçadas;
 - suíte automatizada reproduzível com Node.js;
 - workflow de verificações no GitHub Actions;
-- checklist manual para aprovação da `v0.1.0`.
+- checklist manual para aprovação da `v0.1.0`;
+- modal reutilizável para confirmações, ações destrutivas e entrada de texto;
+- cartões de correção com alternativa escolhida, resposta correta e justificativa separadas.
 
 ### Alterado
 
@@ -49,10 +51,13 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - respostas da IA são validadas integralmente antes da confirmação de substituição;
 - erros de importação permanecem visíveis por mais tempo e não alteram o conteúdo atual;
 - alterações em conteúdos anteriores invalidam somente as etapas dependentes;
-- o desempenho inicial permanece preservado após novas tentativas.
+- o desempenho inicial permanece preservado após novas tentativas;
 - campos e flashcards possuem associações de rótulo explícitas;
 - navegação responsiva possui backdrop, fechamento por `Esc` e estado expandido;
-- espaçamentos verticais se adaptam a desktops de menor altura.
+- espaçamentos verticais se adaptam a desktops de menor altura;
+- confirmações e renomeação não dependem mais dos diálogos nativos do navegador;
+- espaçamento entre campos e grupos de ações foi normalizado;
+- correção imediata passou a priorizar comparação visual e legibilidade.
 
 ## [prototype-v0.4] — 2026-08-29
 

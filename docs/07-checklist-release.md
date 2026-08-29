@@ -21,6 +21,8 @@ Resultado esperado: `9/9 verificações aprovadas`.
 - abrir a central e carregar a demonstração;
 - percorrer as doze telas usando apenas `Tab`, `Shift+Tab`, `Enter` e `Espaço`;
 - confirmar foco visível e ordem de navegação lógica;
+- testar renomeação, exclusão, reinício e substituição de conteúdo nos modais próprios;
+- conferir os cartões da correção imediata para respostas certas e erradas;
 - alternar os temas claro e escuro;
 - confirmar que apenas o conteúdo central rola e que as ações permanecem visíveis;
 - exportar TXT e JSON na tela final.

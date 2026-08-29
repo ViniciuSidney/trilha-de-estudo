@@ -91,3 +91,13 @@ Em telas menores, o menu lateral controla foco, estado expandido e fechamento po
 ## Qualidade automatizada
 
 A suíte em `tests/run-tests.js` usa apenas recursos nativos do Node.js. Ela cobre seletores, exportação, migrações, backup, validações, renderização das doze telas e requisitos estruturais da interface. O GitHub Actions executa a mesma verificação em `dev`, `main` e pull requests para reduzir regressões antes de uma release.
+
+## Diálogos próprios
+
+Confirmações destrutivas, substituições de conteúdo e renomeação utilizam um único modal reutilizável. Essa escolha mantém vocabulário, cores e hierarquia visual consistentes, permite explicar a consequência antes da ação e evita diferenças entre os diálogos nativos de cada navegador.
+
+O componente oferece variações neutra, de atenção e destrutiva; aceita entrada de texto; bloqueia confirmação vazia; fecha por `Esc`; contém o foco enquanto aberto; e devolve o foco ao controle de origem.
+
+## Correção imediata
+
+O gabarito não é apresentado como uma linha compacta. Cada questão possui um cartão próprio com estado, enunciado, alternativa escolhida, resposta correta quando houver erro e justificativa. Em acertos, a alternativa não é duplicada desnecessariamente. Assim, o estudante consegue comparar antes de solicitar a devolutiva aprofundada da IA.

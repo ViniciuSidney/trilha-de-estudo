@@ -95,6 +95,32 @@
       </section>
     </div>
 
+    <div id="actionModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle" aria-describedby="actionModalMessage" hidden>
+      <div class="modal-backdrop" data-dialog-cancel></div>
+      <section class="modal-panel action-modal-panel" tabindex="-1">
+        <div class="modal-heading">
+          <div class="dialog-heading-copy">
+            <span id="actionModalEyebrow" class="eyebrow">Confirmação</span>
+            <h2 id="actionModalTitle">Confirmar ação</h2>
+          </div>
+          <button class="icon-button" type="button" data-dialog-cancel aria-label="Fechar">×</button>
+        </div>
+        <div class="dialog-content">
+          <div id="actionModalIcon" class="dialog-icon" aria-hidden="true">?</div>
+          <p id="actionModalMessage"></p>
+        </div>
+        <div id="actionModalField" class="field" hidden>
+          <label id="actionModalInputLabel" for="actionModalInput">Novo valor</label>
+          <input id="actionModalInput" type="text" maxlength="90" autocomplete="off" />
+          <span id="actionModalHint" class="hint"></span>
+        </div>
+        <div class="modal-actions">
+          <button id="actionModalCancel" class="button secondary" type="button" data-dialog-cancel>Cancelar</button>
+          <button id="actionModalConfirm" class="button" type="button">Confirmar</button>
+        </div>
+      </section>
+    </div>
+
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="js/config.js"></script>
     <script src="js/storage.js"></script>
