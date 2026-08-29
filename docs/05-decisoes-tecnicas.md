@@ -29,27 +29,26 @@ Perguntas, questões, erros e flashcards são apresentados individualmente para 
 
 Claro e escuro utilizam paletas próprias. A preferência fica salva localmente.
 
-## Próxima refatoração
+## Arquitetura modular da v0.1.0
 
-O arquivo `js/app.js` ainda concentra estado, regras, renderização e eventos. A primeira fase da v0.1.0 deverá separá-lo sem alterar o comportamento validado.
+A fundação técnica separa responsabilidades sem exigir empacotador, servidor ou módulos ES. Os arquivos usam o namespace `window.TrilhaApp` e são carregados em ordem pelo `index.html`, preservando a abertura direta da aplicação pelo sistema de arquivos.
 
-Estrutura sugerida:
+Estrutura atual:
 
 ```text
 js/
 ├── app.js
-├── core/
-│   ├── state.js
-│   ├── storage.js
-│   └── navigation.js
-├── services/
-│   ├── prompts.js
-│   ├── parsers.js
-│   └── exporters.js
-└── ui/
-    ├── render.js
-    ├── screens.js
-    └── events.js
+├── config.js
+├── demo.js
+├── exporter.js
+├── navigation.js
+├── prompts.js
+├── selectors.js
+├── state.js
+├── storage.js
+├── utils.js
+├── validators.js
+└── views.js
 ```
 
-Essa divisão deve ser feita gradualmente, com testes após cada extração.
+O `app.js` permanece como orquestrador dos elementos do DOM e dos eventos. Regras derivadas, validações, dados demonstrativos, exportação, persistência e geração das telas ficam isolados em módulos próprios.

@@ -4,6 +4,18 @@
 
 Confirmar que o fluxo principal permanece utilizável, que os dados são preservados e que cada etapa reage corretamente a entradas válidas e inválidas.
 
+## Verificações automatizadas da fundação técnica
+
+- [x] verificar a sintaxe de todos os arquivos JavaScript;
+- [x] testar estado, navegação, seletores e exportação;
+- [x] testar importações válidas e inválidas;
+- [x] renderizar programaticamente as doze telas;
+- [x] conferir o balanceamento estrutural dos painéis das doze telas;
+- [x] carregar a aplicação e a demonstração com um DOM simulado;
+- [x] confirmar o envelope de persistência com `schemaVersion: 1`.
+
+O teste visual e interativo em navegador real permanece obrigatório após alterações de interface ou integração entre módulos.
+
 ## Fluxo principal
 
 - [ ] definir assunto e objetivo;

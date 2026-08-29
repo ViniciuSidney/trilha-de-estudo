@@ -16,8 +16,8 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 
 ### Fase 1 — fundação técnica
 
-- [ ] dividir o JavaScript em módulos;
-- [ ] separar estado, armazenamento, navegação, prompts, validações e interface;
+- [x] dividir o JavaScript em módulos;
+- [x] separar estado, armazenamento, navegação, prompts, validações e interface;
 - [x] criar um modelo de dados versionado;
 - [x] centralizar persistência e migrações;
 - [ ] manter compatibilidade com o fluxo atual e com a sessão demonstrativa.

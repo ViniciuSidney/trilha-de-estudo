@@ -52,7 +52,18 @@ trilha-de-estudo/
 │   ├── 05-decisoes-tecnicas.md
 │   └── 06-git-e-github.md
 ├── js/
-│   └── app.js
+│   ├── app.js
+│   ├── config.js
+│   ├── demo.js
+│   ├── exporter.js
+│   ├── navigation.js
+│   ├── prompts.js
+│   ├── selectors.js
+│   ├── state.js
+│   ├── storage.js
+│   ├── utils.js
+│   ├── validators.js
+│   └── views.js
 ├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
