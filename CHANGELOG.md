@@ -16,6 +16,7 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 ### Adicionado
 
 - módulo de configuração compartilhada;
+- módulos independentes de utilidades e geração de prompts;
 - armazenamento interno com `schemaVersion: 1`;
 - migração automática do estado plano do protótipo;
 - normalização de campos essenciais antes de carregar ou salvar.
