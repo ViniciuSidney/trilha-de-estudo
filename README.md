@@ -17,6 +17,9 @@ Aplicação web local-first que conduz uma sessão de estudo em uma sequência l
 ## Características
 
 - sete etapas principais distribuídas em doze telas;
+- central local para iniciar, continuar e administrar estudos;
+- múltiplas sessões independentes com histórico, progresso e desempenho;
+- ações para renomear, duplicar e excluir sessões;
 - prompts adaptados ao conteúdo da sessão;
 - integração manual com qualquer IA por copiar e colar;
 - importação estruturada de perguntas, questões e flashcards;
@@ -56,9 +59,11 @@ trilha-de-estudo/
 │   ├── config.js
 │   ├── demo.js
 │   ├── exporter.js
+│   ├── home.js
 │   ├── navigation.js
 │   ├── prompts.js
 │   ├── selectors.js
+│   ├── sessions.js
 │   ├── state.js
 │   ├── storage.js
 │   ├── utils.js
@@ -73,7 +78,7 @@ trilha-de-estudo/
 
 ## Dados e privacidade
 
-O projeto não envia dados automaticamente para servidores próprios. O progresso é armazenado no `localStorage` do navegador. O usuário escolhe manualmente qual IA utilizar e quais conteúdos enviar a ela.
+O projeto não envia dados automaticamente para servidores próprios. As sessões e a preferência de tema são armazenadas no `localStorage` do navegador. O usuário escolhe manualmente qual IA utilizar e quais conteúdos enviar a ela.
 
 ## Versionamento
 

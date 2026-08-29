@@ -1,6 +1,6 @@
 const { steps, createInitialState } = window.TrilhaApp.config;
-const { loadState, saveState: persistState } = window.TrilhaApp.storage;
 const { createStateManager } = window.TrilhaApp.state;
+const { createSessionService } = window.TrilhaApp.sessions;
 const { buildTheoryPrompt, buildIntroPrompt, buildQuizPrompt, buildCorrectionPrompt, buildFlashcardPrompt } = window.TrilhaApp.prompts;
 const navigation = window.TrilhaApp.navigation;
 const selectors = window.TrilhaApp.selectors;
@@ -8,8 +8,11 @@ const validators = window.TrilhaApp.validators;
 const { downloadSession } = window.TrilhaApp.exporter;
 const { createDemoState } = window.TrilhaApp.demo;
 const { createViewRenderer } = window.TrilhaApp.views;
+const { sessionName, renderHome } = window.TrilhaApp.home;
 
-const stateManager = createStateManager(loadState());
+const sessionService = createSessionService();
+const initialRuntimeState = sessionService.getActiveState() || { ...createInitialState(), theme: sessionService.getTheme() };
+const stateManager = createStateManager(initialRuntimeState);
 let state = stateManager.getState();
 let toastTimer;
 let viewRenderer;
@@ -26,6 +29,7 @@ const toast = document.querySelector("#toast");
 const themeButton = document.querySelector("#themeButton");
 const themeIcon = document.querySelector("#themeIcon");
 const themeLabel = document.querySelector("#themeLabel");
+const homeButton = document.querySelector("#homeButton");
 
 applyTheme();
 
@@ -41,14 +45,15 @@ function applyTheme() {
 function toggleTheme() {
   state.theme = state.theme === "dark" ? "light" : "dark";
   applyTheme();
-  saveState();
+  const result = sessionService.setTheme(state.theme);
+  saveStatus.textContent = result.ok ? "Tudo salvo" : "Não foi possível salvar";
 }
 
 function saveState() {
   saveStatus.textContent = "Salvando…";
-  const result = persistState(state);
+  const result = sessionService.saveActiveState(state);
   if (!result.ok) {
-    saveStatus.textContent = result.reason === "incompatible-schema" ? "Versão de dados incompatível" : "Não foi possível salvar";
+    saveStatus.textContent = result.reason === "no-active-session" ? "Nenhuma sessão aberta" : result.reason === "incompatible-schema" ? "Versão de dados incompatível" : "Não foi possível salvar";
     return;
   }
   window.setTimeout(() => (saveStatus.textContent = "Tudo salvo"), 220);
@@ -58,6 +63,32 @@ function updateState(patch, renderAfter = false) {
   state = stateManager.updateState(patch);
   saveState();
   if (renderAfter) render();
+}
+
+function createNewSession() {
+  const created = sessionService.createSession({ ...createInitialState(), theme: sessionService.getTheme() });
+  state = stateManager.replaceState(created.state);
+  applyTheme();
+  render();
+  screen.scrollTo({ top: 0 });
+  showToast("Nova sessão criada.");
+}
+
+function openSession(id) {
+  const opened = sessionService.openSession(id);
+  if (!opened) return showToast("A sessão não foi encontrada.");
+  state = stateManager.replaceState(opened);
+  applyTheme();
+  render();
+  screen.scrollTo({ top: 0 });
+}
+
+function leaveCurrentSession() {
+  if (sessionService.getActiveSession()) saveState();
+  sessionService.leaveSession();
+  state = stateManager.replaceState({ ...createInitialState(), theme: sessionService.getTheme() });
+  render();
+  screen.scrollTo({ top: 0 });
 }
 
 function showToast(message) {
@@ -230,8 +261,22 @@ function setItemIndex(kind, index) {
 
 
 function render() {
-  stepNav.innerHTML = viewRenderer.renderNav();
+  const activeSession = sessionService.getActiveSession();
+  const homeView = !activeSession;
+  document.body.classList.toggle("home-view", homeView);
   screenActions.innerHTML = "";
+
+  if (homeView) {
+    stepNav.innerHTML = "";
+    screenContent.innerHTML = renderHome(sessionService.listSessions());
+    progressLabel.textContent = "Suas sessões de estudo";
+    progressBar.style.width = "0%";
+    saveStatus.textContent = "Salvo neste navegador";
+    sidebarSubject.textContent = "Nenhuma sessão aberta";
+    return;
+  }
+
+  stepNav.innerHTML = viewRenderer.renderNav();
   screenContent.innerHTML = viewRenderer.renderScreen(state.currentStep);
   const actionRows = screenContent.querySelectorAll(".button-row");
   const primaryActions = actionRows[actionRows.length - 1];
@@ -307,23 +352,62 @@ function exportSession() {
 }
 
 function loadDemo() {
-  state = stateManager.replaceState(createDemoState(state.theme));
-  saveState();
+  const demoState = createDemoState(sessionService.getTheme());
+  if (sessionService.getActiveSession()) {
+    state = stateManager.replaceState(demoState);
+    saveState();
+  } else {
+    const created = sessionService.createSession(demoState, { title: "Demonstração · Ondulatória" });
+    state = stateManager.replaceState(created.state);
+  }
+  applyTheme();
   render();
   showToast("Demonstração carregada. Percorra as etapas no seu ritmo.");
 }
 
 function resetSession() {
+  if (!sessionService.getActiveSession()) return createNewSession();
   if (!window.confirm("Deseja apagar a sessão salva neste navegador e recomeçar?")) return;
-  const currentTheme = state.theme;
-  state = stateManager.replaceState({ ...createInitialState(), theme: currentTheme });
-  saveState();
+  state = stateManager.replaceState(sessionService.restartActiveSession());
   applyTheme();
   render();
   showToast("Nova sessão iniciada.");
 }
 
+function handleSessionAction(action, id) {
+  const session = sessionService.findSession(id);
+  if (!session) return showToast("A sessão não foi encontrada.");
+
+  if (action === "open") return openSession(id);
+  if (action === "rename") {
+    const title = window.prompt("Novo nome para a sessão:", sessionName(session));
+    if (title === null) return;
+    const result = sessionService.renameSession(id, title);
+    showToast(result.ok ? "Sessão renomeada." : "Digite um nome válido.");
+  }
+  if (action === "duplicate") {
+    sessionService.duplicateSession(id);
+    showToast("Sessão duplicada.");
+  }
+  if (action === "delete") {
+    const name = sessionName(session);
+    if (!window.confirm(`Excluir permanentemente a sessão "${name}"?`)) return;
+    sessionService.deleteSession(id);
+    showToast("Sessão excluída.");
+  }
+  render();
+}
+
 document.addEventListener("click", (event) => {
+  const homeAction = event.target.closest("[data-home-action]");
+  if (homeAction) {
+    if (homeAction.dataset.homeAction === "new") return createNewSession();
+    if (homeAction.dataset.homeAction === "demo") return loadDemo();
+  }
+
+  const sessionAction = event.target.closest("[data-session-action]");
+  if (sessionAction) return handleSessionAction(sessionAction.dataset.sessionAction, sessionAction.dataset.sessionId);
+
   const stepButton = event.target.closest("[data-step]");
   if (stepButton) return goToStep(Number(stepButton.dataset.step));
 
@@ -374,9 +458,10 @@ document.addEventListener("click", (event) => {
 });
 
 document.querySelector("#menuButton").addEventListener("click", () => document.body.classList.toggle("menu-open"));
+homeButton.addEventListener("click", leaveCurrentSession);
 themeButton.addEventListener("click", toggleTheme);
 document.querySelector("#demoButton").addEventListener("click", () => {
-  if (!state.subject || window.confirm("A demonstração substituirá a sessão atual. Continuar?")) loadDemo();
+  if (!sessionService.getActiveSession() || !state.subject || window.confirm("A demonstração substituirá somente a sessão atual. Continuar?")) loadDemo();
 });
 document.querySelector("#resetButton").addEventListener("click", resetSession);
 

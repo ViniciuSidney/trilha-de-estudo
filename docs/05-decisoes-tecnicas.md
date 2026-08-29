@@ -27,7 +27,13 @@ Perguntas, questões, erros e flashcards são apresentados individualmente para 
 
 ## Temas
 
-Claro e escuro utilizam paletas próprias. A preferência fica salva localmente.
+Claro e escuro utilizam paletas próprias. A preferência é global, fica salva localmente e se aplica a todas as sessões.
+
+## Central e múltiplas sessões
+
+A central existe fora do assistente de doze telas. Ela apresenta o histórico local e permite iniciar, continuar, revisar e administrar sessões independentes. Abrir uma sessão define `activeSessionId`; voltar à central apenas fecha a sessão ativa, sem remover seu conteúdo.
+
+Cada sessão guarda seu próprio estado completo. Título, assunto, status e datas ficam também como metadados para que a central possa renderizar rapidamente progresso e desempenho.
 
 ## Arquitetura modular da v0.1.0
 
@@ -41,9 +47,11 @@ js/
 ├── config.js
 ├── demo.js
 ├── exporter.js
+├── home.js
 ├── navigation.js
 ├── prompts.js
 ├── selectors.js
+├── sessions.js
 ├── state.js
 ├── storage.js
 ├── utils.js
@@ -51,4 +59,8 @@ js/
 └── views.js
 ```
 
-O `app.js` permanece como orquestrador dos elementos do DOM e dos eventos. Regras derivadas, validações, dados demonstrativos, exportação, persistência e geração das telas ficam isolados em módulos próprios.
+O `app.js` permanece como orquestrador dos elementos do DOM e dos eventos. Regras derivadas, validações, dados demonstrativos, exportação, persistência, sessões, central e geração das telas ficam isolados em módulos próprios.
+
+## Evolução do armazenamento
+
+O `schemaVersion: 2` representa um repositório local de sessões. O carregamento reconhece o estado plano do protótipo e o envelope `schemaVersion: 1`, cria uma primeira sessão quando há conteúdo relevante e persiste a migração imediatamente. Uma versão futura desconhecida bloqueia gravações para impedir perda silenciosa de dados.

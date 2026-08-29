@@ -12,7 +12,11 @@ Confirmar que o fluxo principal permanece utilizável, que os dados são preserv
 - [x] renderizar programaticamente as doze telas;
 - [x] conferir o balanceamento estrutural dos painéis das doze telas;
 - [x] carregar a aplicação e a demonstração com um DOM simulado;
-- [x] confirmar o envelope de persistência com `schemaVersion: 1`.
+- [x] confirmar o repositório local com `schemaVersion: 2`;
+- [x] migrar automaticamente dados planos e o envelope `schemaVersion: 1`;
+- [x] testar criação, abertura, renomeação, duplicação, reinício e exclusão de sessões;
+- [x] testar o percurso central → sessão → central → retomada;
+- [x] confirmar persistência do tema global e da sessão ativa após recarga.
 
 O teste visual e interativo em navegador real permanece obrigatório após alterações de interface ou integração entre módulos.
 
@@ -37,6 +41,15 @@ O teste visual e interativo em navegador real permanece obrigatório após alter
 - [ ] confirmar a restauração do tema visual;
 - [ ] recomeçar a sessão e verificar a limpeza dos dados;
 - [ ] carregar a demonstração sobre uma sessão existente.
+
+## Múltiplas sessões
+
+- [ ] criar duas sessões e preencher conteúdos diferentes;
+- [ ] sair para a central e retomar cada sessão;
+- [ ] renomear e duplicar uma sessão;
+- [ ] excluir uma sessão após a confirmação;
+- [ ] conferir assunto, progresso, desempenho e ordenação por atualização;
+- [ ] recarregar a central e confirmar o histórico salvo.
 
 ## Validações
 

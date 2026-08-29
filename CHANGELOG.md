@@ -8,7 +8,6 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 
 ### Planejado
 
-- sistema de múltiplas sessões;
 - backup e restauração em JSON;
 - validações mais robustas das respostas da IA.
 
@@ -17,16 +16,22 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - módulo de configuração compartilhada;
 - módulos independentes de utilidades e geração de prompts;
 - módulos de estado, navegação, seletores, validação, exportação, demonstração e interface;
-- armazenamento interno com `schemaVersion: 1`;
+- central de sessões com histórico local;
+- criação, retomada, renomeação, duplicação e exclusão de sessões;
+- indicadores de progresso e desempenho por sessão;
+- armazenamento interno com `schemaVersion: 2`;
 - migração automática do estado plano do protótipo;
+- migração automática do envelope `schemaVersion: 1`;
 - normalização de campos essenciais antes de carregar ou salvar.
 
 ### Alterado
 
 - persistência isolada no módulo `storage.js`;
-- proteção contra sobrescrita de versões de dados incompatíveis.
+- tema visual tratado como configuração global;
+- sessão ativa separada do histórico local;
+- proteção contra sobrescrita de versões de dados incompatíveis;
 - `app.js` reduzido ao papel de orquestrador do DOM e dos eventos;
-- mensagens de importação agora identificam estruturas e campos inválidos;
+- mensagens de importação agora identificam estruturas e campos inválidos.
 
 ## [prototype-v0.4] — 2026-08-29
 

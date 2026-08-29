@@ -176,6 +176,7 @@ button { cursor: pointer; }
 
 .sidebar-footer { margin-top: auto; padding: 22px 8px 2px; color: var(--muted); font-size: .72rem; }
 .sidebar-footer span { display: block; margin-bottom: 8px; }
+.sidebar-footer .text-button { display: block; margin-top: 8px; }
 .text-button { padding: 0; border: 0; background: none; color: var(--green); font-size: .76rem; font-weight: 700; }
 .text-button.danger { color: var(--danger); }
 
@@ -204,6 +205,11 @@ button { cursor: pointer; }
 .progress-track { height: 6px; margin-top: 8px; overflow: hidden; border-radius: 999px; background: #e6eae6; }
 .progress-bar { height: 100%; width: 10%; border-radius: inherit; background: var(--green); transition: width .35s ease; }
 .top-actions { display: flex; align-items: center; gap: 9px; }
+.home-brand { display: none; align-items: center; gap: 11px; }
+.home-brand .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
+.home-brand strong, .home-brand span { display: block; }
+.home-brand strong { font-size: .9rem; }
+.home-brand span { color: var(--muted); font-size: .72rem; }
 .theme-button { min-width: 126px; }
 :root[data-theme="dark"] .progress-track { background: #2d352f; }
 
@@ -445,6 +451,48 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 4px 
 .notice { display: flex; gap: 11px; align-items: flex-start; margin-bottom: 0; padding: 14px 16px; border: 1px solid var(--yellow-border); border-radius: 13px; background: var(--yellow-soft); color: var(--text-soft); font-size: .83rem; }
 .notice strong { display: block; margin-bottom: 2px; }
 
+body.home-view .app-shell { grid-template-columns: minmax(0, 1fr); }
+body.home-view .sidebar { display: none; }
+body.home-view .topbar { grid-template-columns: minmax(0, 1fr) auto; }
+body.home-view .home-brand { display: flex; }
+body.home-view .menu-button, body.home-view .progress-block { display: none; }
+body.home-view .screen-frame { grid-template-rows: minmax(0, 1fr); }
+body.home-view .screen { padding-top: clamp(26px, 3vw, 46px); }
+body.home-view .screen-content { min-height: 0; }
+
+.home-view-content { display: grid; gap: var(--space-panel); width: 100%; }
+.home-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; }
+.home-intro .lead { margin-bottom: 0; }
+.home-new-button { flex: 0 0 auto; }
+.home-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-panel); }
+.continue-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.continue-panel .eyebrow { margin-bottom: 7px; }
+.continue-panel h2 { font-size: clamp(1.3rem, 2vw, 1.75rem); }
+.continue-panel p { margin: 0; }
+.continue-panel .button { flex: 0 0 auto; }
+.home-empty { display: grid; justify-items: center; gap: 10px; padding-block: clamp(34px, 6vw, 70px); text-align: center; }
+.home-empty .empty-mark { display: grid; width: 54px; height: 54px; place-items: center; border-radius: 18px; background: var(--green-soft); color: var(--green); font-size: 1.4rem; }
+.home-empty p { max-width: 600px; }
+.sessions-section { display: grid; gap: 14px; }
+.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+.section-heading .eyebrow { margin-bottom: 5px; }
+.section-heading h2 { margin: 0; font-size: 1.45rem; }
+.sessions-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-panel); }
+.session-card { display: flex; min-width: 0; flex-direction: column; justify-content: space-between; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.session-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.session-card-heading small { overflow: hidden; color: var(--muted); font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+.status-pill { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: .66rem; font-weight: 800; text-transform: uppercase; }
+.status-pill.in-progress { background: var(--yellow-soft); color: var(--text-soft); }
+.status-pill.completed { background: var(--green-soft); color: var(--green); }
+.session-card h3 { margin: 14px 0 5px; overflow-wrap: anywhere; font-size: 1.12rem; }
+.session-card p { margin-bottom: 12px; color: var(--muted); font-size: .8rem; }
+.session-progress { height: 7px; overflow: hidden; border-radius: 999px; background: var(--surface-soft); }
+.session-progress span { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+.session-meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--muted); font-size: .7rem; }
+.session-card-actions { display: flex; flex-wrap: wrap; gap: 7px; padding-top: 14px; border-top: 1px solid var(--line); }
+.session-card-actions .button { flex: 1 1 auto; }
+.session-card-actions .session-delete { color: var(--danger); }
+
 .toast {
   position: fixed;
   z-index: 100;
@@ -477,6 +525,7 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 4px 
   .prepare-grid { grid-template-columns: 1fr; }
   .correction-layout { grid-template-columns: 1fr; }
   .bounded-panel { max-height: none; min-height: 0; overflow: visible; }
+  body.home-view .topbar { grid-template-columns: minmax(0, 1fr) auto; }
 }
 
 @media (max-width: 650px) {
@@ -484,6 +533,10 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 4px 
   .screen-actions .button-row { padding-inline: 17px; }
   .topbar { padding-inline: 16px; }
   .score-grid, .flashcard-list { grid-template-columns: 1fr; }
+  .home-intro, .continue-panel, .section-heading { align-items: stretch; flex-direction: column; }
+  .home-stats, .sessions-grid { grid-template-columns: 1fr; }
+  .home-new-button, .continue-panel .button { width: 100%; }
+  .session-card-heading, .session-meta { align-items: flex-start; flex-direction: column; gap: 5px; }
   .summary-row { grid-template-columns: 1fr; gap: 3px; }
   .button-row, .button-group { align-items: stretch; flex-direction: column; }
   .button { width: 100%; }

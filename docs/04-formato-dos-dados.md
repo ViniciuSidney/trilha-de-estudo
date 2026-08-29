@@ -21,11 +21,11 @@ O objeto contém:
 - flashcards;
 - índices de navegação dos itens.
 
-Ao encontrar esse formato plano, a aplicação o normaliza e o converte para o modelo versionado no próximo salvamento.
+Ao encontrar esse formato plano, a aplicação o normaliza e o converte imediatamente para o modelo atual.
 
-## Armazenamento interno — schemaVersion 1
+## Formato intermediário — schemaVersion 1
 
-A fundação da `v0.1.0` mantém temporariamente uma sessão ativa, mas passa a armazená-la em um envelope versionado:
+A primeira fundação modular utilizou temporariamente um envelope com uma única sessão:
 
 ```json
 {
@@ -42,44 +42,48 @@ A fundação da `v0.1.0` mantém temporariamente uma sessão ativa, mas passa a 
 - dados legados sem `schemaVersion` são reconhecidos automaticamente;
 - versões incompatíveis não são sobrescritas silenciosamente.
 
-## Modelo de backup e múltiplas sessões planejado
+Esse formato também é migrado automaticamente para o modelo atual.
+
+## Armazenamento atual — schemaVersion 2
 
 ```json
 {
   "app": "Trilha de Estudo",
-  "schemaVersion": 1,
-  "exportedAt": "2026-08-29T00:00:00.000Z",
+  "schemaVersion": 2,
+  "savedAt": "2026-08-29T00:00:00.000Z",
   "settings": {
     "theme": "light"
   },
-  "sessions": []
+  "activeSessionId": "uuid-da-sessao",
+  "sessions": [
+    {
+      "id": "uuid-da-sessao",
+      "title": "Revisão de ondulatória",
+      "subject": "Ondulatória",
+      "status": "in_progress",
+      "createdAt": "2026-08-29T00:00:00.000Z",
+      "updatedAt": "2026-08-29T00:15:00.000Z",
+      "completedAt": null,
+      "state": {}
+    }
+  ]
 }
 ```
 
-Cada sessão deverá possuir, no mínimo:
+- `settings.theme` é uma configuração global aplicada a todas as sessões;
+- `activeSessionId` indica qual sessão está aberta no assistente e fica `null` na central;
+- `title` é um nome opcional independente do assunto estudado;
+- `subject`, `status` e datas são metadados usados na central;
+- `state` preserva todo o estado do fluxo, incluindo etapa, conteúdos, respostas, desempenho e flashcards;
+- IDs duplicados ou campos ausentes são normalizados antes do uso;
+- chegar à tela final marca a sessão como concluída.
 
-```json
-{
-  "id": "uuid",
-  "subject": "Assunto estudado",
-  "objective": "Objetivo da sessão",
-  "status": "in_progress",
-  "createdAt": "ISO-8601",
-  "updatedAt": "ISO-8601",
-  "completedAt": null,
-  "currentStep": 0,
-  "maxStep": 0,
-  "content": {},
-  "performance": {},
-  "flashcards": []
-}
-```
+## Regras
 
-## Regras futuras
-
-- toda exportação deve informar `schemaVersion`;
 - IDs devem permanecer estáveis;
 - migrações não podem apagar dados silenciosamente;
-- backups incompatíveis devem ser recusados com mensagem clara;
+- versões futuras incompatíveis não podem ser sobrescritas;
+- toda exportação futura de backup deve informar `schemaVersion`;
+- backups incompatíveis deverão ser recusados com mensagem clara;
 - conteúdos originais importados da IA devem poder ser preservados;
 - configurações gerais não devem ser duplicadas em cada sessão.

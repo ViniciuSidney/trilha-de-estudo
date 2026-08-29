@@ -1,6 +1,6 @@
 (function initializeConfig(global) {
   const APP_NAME = "Trilha de Estudo";
-  const SCHEMA_VERSION = 1;
+  const SCHEMA_VERSION = 2;
   const STORAGE_KEY = "trilha-estudo-prototipo-v4";
 
   const phases = [

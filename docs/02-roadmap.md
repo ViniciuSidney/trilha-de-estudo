@@ -24,11 +24,11 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 
 ### Fase 2 — múltiplas sessões
 
-- [ ] criar tela inicial para começar ou continuar estudos;
-- [ ] criar histórico local de sessões;
-- [ ] permitir criar, continuar, renomear, duplicar e excluir sessões;
-- [ ] salvar cada sessão de maneira independente;
-- [ ] registrar assunto, data, progresso e desempenho.
+- [x] criar tela inicial para começar ou continuar estudos;
+- [x] criar histórico local de sessões;
+- [x] permitir criar, continuar, renomear, duplicar e excluir sessões;
+- [x] salvar cada sessão de maneira independente;
+- [x] registrar assunto, data, progresso e desempenho.
 
 ### Fase 3 — dados confiáveis
 
