@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Trilha linear de estudos apoiada por inteligência artificial."
+    />
+    <title>Trilha de Estudo</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Etapas da sessão">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">T</div>
+          <div>
+            <strong>Trilha de Estudo</strong>
+            <span>Base oficial · protótipo v0.4</span>
+          </div>
+        </div>
+
+        <div class="session-chip">
+          <span class="session-dot" aria-hidden="true"></span>
+          <div>
+            <small>Sessão atual</small>
+            <strong id="sidebarSubject">Ainda sem assunto</strong>
+          </div>
+        </div>
+
+        <nav id="stepNav" class="step-nav"></nav>
+
+        <div class="sidebar-footer">
+          <span>Salvamento automático no navegador</span>
+          <button id="resetButton" class="text-button danger" type="button">Recomeçar sessão</button>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Abrir etapas">☰</button>
+          <div class="progress-block">
+            <div class="progress-meta">
+              <span id="progressLabel">Etapa 1 de 10</span>
+              <span id="saveStatus">Tudo salvo</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button id="themeButton" class="button secondary compact theme-button" type="button" aria-label="Ativar tema escuro">
+              <span id="themeIcon" aria-hidden="true">☾</span>
+              <span id="themeLabel">Tema escuro</span>
+            </button>
+            <button id="demoButton" class="button secondary compact" type="button">Carregar demonstração</button>
+          </div>
+        </header>
+
+        <div class="screen-frame">
+          <section id="screen" class="screen" aria-live="polite">
+            <div id="screenContent" class="screen-content"></div>
+          </section>
+          <footer id="screenActions" class="screen-actions" aria-label="Navegação da etapa"></footer>
+        </div>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="js/app.js"></script>
+  </body>
+</html>

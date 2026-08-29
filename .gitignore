@@ -1,0 +1,30 @@
+# Sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependências e builds futuros
+node_modules/
+dist/
+build/
+coverage/
+
+# Configurações locais e segredos
+.env
+.env.*
+!.env.example
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.temp
+~$*
+
+# Pacotes gerados localmente
+*.zip
