@@ -28,11 +28,13 @@
       introQuestions: [],
       introSourceTheory: "",
       introAnswers: {},
+      introReviewed: {},
       introIndex: 0,
       quizRaw: "",
       quizQuestions: [],
       quizSourceSignature: "",
       quizAnswers: {},
+      quizRetryAnswers: {},
       quizIndex: 0,
       quizFinished: false,
       consolidation: "",
@@ -42,6 +44,7 @@
       flashcardsRaw: "",
       flashcards: [],
       flashcardIndex: 0,
+      finishedAt: "",
     };
   }
 

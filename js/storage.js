@@ -21,7 +21,7 @@
 
     const normalized = { ...initial, ...candidate, theme };
     const arrayFields = ["introQuestions", "quizQuestions", "flashcards"];
-    const objectFields = ["introAnswers", "quizAnswers", "errorReflections"];
+    const objectFields = ["introAnswers", "introReviewed", "quizAnswers", "quizRetryAnswers", "errorReflections"];
 
     arrayFields.forEach((field) => {
       if (!Array.isArray(normalized[field])) normalized[field] = initial[field];
@@ -36,6 +36,7 @@
     ["introIndex", "quizIndex", "errorIndex", "flashcardIndex"].forEach((field) => {
       if (!Number.isInteger(normalized[field]) || normalized[field] < 0) normalized[field] = 0;
     });
+    if (typeof normalized.finishedAt !== "string") normalized.finishedAt = "";
     return normalized;
   }
 

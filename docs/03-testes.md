@@ -16,12 +16,18 @@ Confirmar que o fluxo principal permanece utilizável, que os dados são preserv
 - [x] migrar automaticamente dados planos e o envelope `schemaVersion: 1`;
 - [x] testar criação, abertura, renomeação, duplicação, reinício e exclusão de sessões;
 - [x] testar o percurso central → sessão → central → retomada;
-- [x] confirmar persistência do tema global e da sessão ativa após recarga.
+- [x] confirmar persistência do tema global e da sessão ativa após recarga;
 - [x] testar ida e volta de um backup completo em JSON;
 - [x] rejeitar JSON inválido, aplicativo incorreto, versão incompatível, IDs duplicados e estado corrompido;
 - [x] confirmar que a prévia não altera o histórico;
 - [x] confirmar que somente a restauração aprovada substitui as sessões;
 - [x] confirmar que falhas de backup e respostas inválidas da IA preservam os dados atuais.
+- [x] testar revelação das respostas-modelo somente após a resposta do aluno;
+- [x] separar respostas iniciais e novas tentativas das questões;
+- [x] calcular erros corrigidos, pendências e comparações realizadas;
+- [x] congelar a duração ao concluir a sessão;
+- [x] gerar exportações individuais completas em TXT e JSON;
+- [x] manter compatibilidade com backups anteriores sem os novos campos opcionais.
 
 O teste visual e interativo em navegador real permanece obrigatório após alterações de interface ou integração entre módulos.
 
@@ -32,12 +38,24 @@ O teste visual e interativo em navegador real permanece obrigatório após alter
 - [ ] colar e visualizar um resumo em Markdown;
 - [ ] importar perguntas introdutórias;
 - [ ] responder todas as perguntas;
+- [ ] comparar cada resposta com a resposta-modelo;
 - [ ] importar e resolver questões objetivas;
 - [ ] conferir resultado e gabarito;
 - [ ] colar a devolutiva da IA;
 - [ ] corrigir ativamente os erros;
+- [ ] refazer cada questão errada e conferir o novo resultado;
 - [ ] importar e revisar flashcards;
 - [ ] concluir e exportar a sessão.
+
+## Aprendizagem ativa e encerramento
+
+- [ ] confirmar que a resposta-modelo permanece oculta antes da comparação;
+- [ ] editar uma resposta já comparada e confirmar que a revisão é solicitada novamente;
+- [ ] conferir que a nova tentativa não altera o resultado inicial;
+- [ ] tentar novamente com alternativa errada e depois correta;
+- [ ] verificar erros corrigidos e pontos pendentes na tela final;
+- [ ] conferir se a duração permanece igual após recarregar a sessão concluída;
+- [ ] abrir as exportações TXT e JSON e conferir respostas, refações, correções e flashcards.
 
 ## Persistência
 

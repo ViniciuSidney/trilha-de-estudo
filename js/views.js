@@ -4,7 +4,7 @@
 
   function createViewRenderer(context) {
     let state = context.getState();
-    const { theoryPrompt, introPrompt, quizPrompt, correctionPrompt, flashcardPrompt, getQuizResult, wrongQuestions } = context;
+    const { theoryPrompt, introPrompt, quizPrompt, correctionPrompt, flashcardPrompt, getQuizResult, getRetryResult, getLearningSummary, wrongQuestions } = context;
 
     function buttonRow({ nextLabel = "Continuar", nextDisabled = false, nextAction = "advance", hideBack = false, backLabel = "Voltar" } = {}) {
       return `
@@ -109,28 +109,34 @@
     
     function renderIntroAnswer() {
       const allAnswered = state.introQuestions.length && state.introQuestions.every((_, i) => (state.introAnswers[i] || "").trim());
+      const allReviewed = state.introQuestions.length && state.introQuestions.every((_, i) => state.introReviewed?.[i]);
       const index = Math.min(state.introIndex, state.introQuestions.length - 1);
       const q = state.introQuestions[index];
+      const reviewed = Boolean(state.introReviewed?.[index]);
       return `
         <span class="eyebrow">Perguntas iniciais · Prática</span>
         <h1>Explique com suas próprias palavras.</h1>
-        <p class="lead">Uma pergunta por vez, sem prompts ou códigos dividindo sua atenção.</p>
+        <p class="lead">Responda primeiro sem ajuda. Depois, compare sua explicação com a resposta-modelo antes de seguir.</p>
         <div class="activity-focus">
           <div class="activity-toolbar">
             <span class="activity-counter">Pergunta ${index + 1} de ${state.introQuestions.length}</span>
-            ${renderItemDots("intro", state.introQuestions.length, index, (i) => Boolean((state.introAnswers[i] || "").trim()))}
+            ${renderItemDots("intro", state.introQuestions.length, index, (i) => Boolean(state.introReviewed?.[i]))}
           </div>
           <div class="question-card single-activity-card">
             <span class="question-index">Pergunta ${index + 1}</span>
             <p>${escapeHTML(q.question)}</p>
             <textarea data-intro-answer="${index}" placeholder="Responda com suas próprias palavras…">${escapeHTML(state.introAnswers[index] || "")}</textarea>
+            <div class="review-actions">
+              <button class="button secondary compact" type="button" data-action="review-intro" data-review-intro-button ${!(state.introAnswers[index] || "").trim() ? "disabled" : ""}>${reviewed ? "Comparação realizada ✓" : "Comparar com a resposta-modelo"}</button>
+            </div>
+            ${reviewed ? `<div class="model-answer" data-model-answer><span>Resposta-modelo</span><p>${escapeHTML(q.modelAnswer)}</p><small>Use-a como referência de ideias essenciais, não como texto para copiar.</small></div>` : ""}
             <div class="item-navigation">
               <button class="button secondary compact" type="button" data-item-kind="intro" data-item-index="${index - 1}" ${index === 0 ? "disabled" : ""}>← Anterior</button>
               <button class="button secondary compact" type="button" data-item-kind="intro" data-item-index="${index + 1}" ${index === state.introQuestions.length - 1 ? "disabled" : ""}>Próxima →</button>
             </div>
           </div>
         </div>
-        ${buttonRow({ nextDisabled: !allAnswered, nextLabel: "Preparar as questões", backLabel: "Voltar à preparação" })}`;
+        ${buttonRow({ nextDisabled: !allAnswered || !allReviewed, nextLabel: "Preparar as questões", backLabel: "Voltar à preparação" })}`;
     }
     
     function renderQuizPrepare() {
@@ -224,29 +230,40 @@
     
     function renderCorrectionResult() {
       const errors = wrongQuestions();
-      const completed = !errors.length || errors.every(({ index }) => (state.errorReflections[index] || "").trim().length >= 20);
+      const completed = !errors.length || errors.every(({ index }) => (state.errorReflections[index] || "").trim().length >= 20 && state.quizRetryAnswers?.[index]);
       const outdated = state.correctionSourceSignature && state.correctionSourceSignature !== correctionPrompt();
       const errorIndex = errors.length ? Math.min(state.errorIndex, errors.length - 1) : 0;
       const currentError = errors[errorIndex];
+      const retryResult = getRetryResult();
+      const retryAnswer = currentError ? state.quizRetryAnswers?.[currentError.index] : "";
+      const retryCorrect = currentError && retryAnswer === currentError.q.answer;
       return `
         <span class="eyebrow">Correção · Resultado</span>
-        <h1>Leia, depois reconstrua os erros.</h1>
-        <p class="lead">A devolutiva já está formatada. Depois da leitura, explique cada erro com suas próprias palavras.</p>
+        <h1>Reconstrua e teste novamente.</h1>
+        <p class="lead">Leia a devolutiva, explique cada erro com suas palavras e faça uma nova tentativa sem apagar o resultado inicial.</p>
         ${outdated ? '<div class="notice"><span>!</span><div><strong>Devolutiva desatualizada</strong>As respostas das questões mudaram. Volte à preparação e gere uma nova correção.</div></div>' : ""}
         ${errors.length ? `<div class="correction-layout">
           <article class="reading bounded-panel">${renderMarkdown(state.consolidation)}</article>
           <div>
             <div class="activity-toolbar">
-              <span class="activity-counter">Erro ${errorIndex + 1} de ${errors.length}</span>
-              ${renderItemDots("error", errors.length, errorIndex, (i) => Boolean((state.errorReflections[errors[i].index] || "").trim()))}
+              <span class="activity-counter">Erro ${errorIndex + 1} de ${errors.length} · ${retryResult.corrected} corrigidos</span>
+              ${renderItemDots("error", errors.length, errorIndex, (i) => Boolean((state.errorReflections[errors[i].index] || "").trim() && state.quizRetryAnswers?.[errors[i].index]))}
             </div>
             <div class="error-card bounded-panel">
               <span class="question-index">Questão ${currentError.index + 1}</span>
               <p><strong>${escapeHTML(currentError.q.statement)}</strong></p>
-              <small class="hint">Correta: ${escapeHTML(currentError.q.answer)} — ${escapeHTML(currentError.q.explanation || "")}</small>
+              <small class="hint">Resposta inicial: ${escapeHTML(state.quizAnswers[currentError.index])} · Gabarito estudado: ${escapeHTML(currentError.q.answer)} — ${escapeHTML(currentError.q.explanation || "")}</small>
               <div class="field correction-field">
                 <label>Explique o erro e reescreva o raciocínio correto</label>
                 <textarea data-error-reflection="${currentError.index}" placeholder="Eu errei porque… O raciocínio correto é…">${escapeHTML(state.errorReflections[currentError.index] || "")}</textarea>
+              </div>
+              <div class="retry-panel">
+                <div class="retry-heading"><div><span class="question-index">Nova tentativa</span><strong>Qual alternativa você marcaria agora?</strong></div>${retryAnswer ? `<span class="result-tag ${retryCorrect ? "correct" : "wrong"}">${retryCorrect ? "Corrigido" : "Tente novamente"}</span>` : ""}</div>
+                <div class="options">${Object.entries(currentError.q.options).map(([key, value]) => `
+                  <label class="option ${retryAnswer === key ? (key === currentError.q.answer ? "retry-correct" : "retry-wrong") : ""}">
+                    <input type="radio" name="retry-${currentError.index}" value="${escapeHTML(key)}" data-retry-answer="${currentError.index}" ${retryAnswer === key ? "checked" : ""} />
+                    <span><span class="option-key">${escapeHTML(key)}.</span> ${escapeHTML(value)}</span>
+                  </label>`).join("")}</div>
               </div>
               <div class="item-navigation">
                 <button class="button secondary compact" type="button" data-item-kind="error" data-item-index="${errorIndex - 1}" ${errorIndex === 0 ? "disabled" : ""}>← Anterior</button>
@@ -315,33 +332,44 @@
     }
     
     function renderFinal() {
-      const result = getQuizResult();
-      const duration = Math.max(1, Math.round((Date.now() - new Date(state.startedAt).getTime()) / 60000));
+      const summary = getLearningSummary();
+      const endTime = state.finishedAt ? new Date(state.finishedAt).getTime() : Date.now();
+      const duration = Math.max(1, Math.round((endTime - new Date(state.startedAt).getTime()) / 60000));
+      const consolidationMessage = !summary.retry.total
+        ? "Você concluiu as questões sem erros objetivos."
+        : summary.retry.remaining === 0
+          ? "Todos os erros iniciais foram corrigidos na nova tentativa."
+          : `${summary.retry.remaining} ${summary.retry.remaining === 1 ? "ponto ainda merece" : "pontos ainda merecem"} uma revisão futura.`;
       return `
         <span class="eyebrow">Sessão concluída</span>
-        <h1>O caminho ficou registrado.</h1>
-        <p class="lead">A sessão reúne conteúdo, prática, erros, consolidação e material de revisão — tudo em uma sequência única.</p>
-        <div class="score-grid">
-          <div class="metric"><span>Desempenho</span><strong>${result.percentage}%</strong></div>
-          <div class="metric"><span>Questões</span><strong>${result.total}</strong></div>
-          <div class="metric"><span>Flashcards</span><strong>${state.flashcards.length}</strong></div>
+        <h1>Seu percurso ficou registrado.</h1>
+        <p class="lead">O resultado abaixo separa o desempenho inicial do que foi consolidado durante a correção.</p>
+        <div class="score-grid final-score-grid">
+          <div class="metric"><span>Desempenho inicial</span><strong>${summary.quiz.percentage}%</strong></div>
+          <div class="metric"><span>Erros corrigidos</span><strong>${summary.retry.corrected}/${summary.retry.total}</strong></div>
+          <div class="metric"><span>Pontos pendentes</span><strong>${summary.retry.remaining}</strong></div>
+          <div class="metric"><span>Flashcards</span><strong>${summary.flashcards}</strong></div>
         </div>
+        <div class="card blue final-diagnosis"><span class="eyebrow">Síntese da consolidação</span><h2>${escapeHTML(consolidationMessage)}</h2><p class="hint">O desempenho inicial permanece preservado para representar com honestidade o primeiro contato com as questões.</p></div>
         <div class="card">
           <h2>Informações gerais</h2>
           <dl class="summary-list">
             <div class="summary-row"><dt>Assunto</dt><dd>${escapeHTML(state.subject)}</dd></div>
             <div class="summary-row"><dt>Objetivo</dt><dd>${escapeHTML(state.objective || "Não informado")}</dd></div>
-            <div class="summary-row"><dt>Acertos</dt><dd>${result.correct} de ${result.total}</dd></div>
-            <div class="summary-row"><dt>Erros trabalhados</dt><dd>${Object.values(state.errorReflections).filter(Boolean).length}</dd></div>
+            <div class="summary-row"><dt>Acertos iniciais</dt><dd>${summary.quiz.correct} de ${summary.quiz.total}</dd></div>
+            <div class="summary-row"><dt>Respostas comparadas</dt><dd>${summary.intro.reviewed} de ${summary.intro.total}</dd></div>
+            <div class="summary-row"><dt>Erros reconstruídos</dt><dd>${summary.reflections} de ${summary.retry.total}</dd></div>
+            <div class="summary-row"><dt>Novas tentativas</dt><dd>${summary.retry.attempted} de ${summary.retry.total}</dd></div>
             <div class="summary-row"><dt>Duração aproximada</dt><dd>${duration} min</dd></div>
             <div class="summary-row"><dt>Armazenamento</dt><dd>Salvo neste navegador</dd></div>
           </dl>
         </div>
         <div class="card blue">
           <h2>Exportar sessão completa</h2>
-          <p class="hint">O arquivo de texto inclui teoria, respostas, resultado, correções e flashcards.</p>
+          <p class="hint">O TXT serve para leitura. O JSON preserva todos os dados estruturados desta sessão.</p>
           <div class="button-group">
-            <button class="button" type="button" data-action="export">Baixar sessão em .txt</button>
+            <button class="button" type="button" data-action="export-text">Baixar sessão em .txt</button>
+            <button class="button secondary" type="button" data-action="export-json">Baixar sessão em .json</button>
             <button class="button secondary" type="button" data-action="print">Imprimir resumo</button>
           </div>
         </div>
@@ -391,4 +419,3 @@
 
   global.TrilhaApp.views = { createViewRenderer };
 })(window);
-

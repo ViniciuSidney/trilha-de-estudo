@@ -75,6 +75,9 @@ Esse formato também é migrado automaticamente para o modelo atual.
 - `title` é um nome opcional independente do assunto estudado;
 - `subject`, `status` e datas são metadados usados na central;
 - `state` preserva todo o estado do fluxo, incluindo etapa, conteúdos, respostas, desempenho e flashcards;
+- `introReviewed` registra quais respostas introdutórias foram comparadas com o modelo;
+- `quizRetryAnswers` mantém as novas tentativas separadas das respostas iniciais;
+- `finishedAt` congela o instante de conclusão usado no cálculo da duração;
 - IDs duplicados ou campos ausentes são normalizados antes do uso;
 - chegar à tela final marca a sessão como concluída.
 
@@ -116,3 +119,27 @@ Antes da restauração, a aplicação verifica:
 - perguntas, questões, respostas, correções e flashcards.
 
 Arquivos de até 10 MB podem ser selecionados. Após a validação, uma prévia informa quantas sessões estão em andamento e concluídas. Os dados locais somente são substituídos quando o usuário confirma a restauração.
+
+Os campos de aprendizagem adicionados durante o desenvolvimento da `v0.1.0` são opcionais na leitura de backups `schemaVersion: 2`. Quando ausentes, recebem valores iniciais seguros, preservando a compatibilidade com backups anteriores.
+
+## Exportação individual da sessão
+
+Além do backup completo, cada sessão pode ser exportada isoladamente em TXT ou JSON. O JSON individual utiliza este envelope:
+
+```json
+{
+  "app": "Trilha de Estudo",
+  "type": "study-session",
+  "schemaVersion": 2,
+  "exportedAt": "2026-08-29T01:00:00.000Z",
+  "session": {
+    "id": "uuid-da-sessao",
+    "title": "Revisão de ondulatória",
+    "subject": "Ondulatória",
+    "summary": {},
+    "state": {}
+  }
+}
+```
+
+O TXT prioriza leitura humana. O JSON preserva metadados, resumo calculado e o estado completo para integrações futuras, mas não funciona como substituto do backup geral.

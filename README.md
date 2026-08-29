@@ -24,13 +24,16 @@ Aplicação web local-first que conduz uma sessão de estudo em uma sequência l
 - prompts adaptados ao conteúdo da sessão;
 - integração manual com qualquer IA por copiar e colar;
 - importação estruturada de perguntas, questões e flashcards;
+- comparação das respostas introdutórias com respostas-modelo;
 - correção automática de questões objetivas;
 - correção ativa dos erros;
+- nova tentativa das questões erradas sem sobrescrever o resultado inicial;
+- resumo final com consolidação, pendências e duração registrada;
 - sessão demonstrativa completa;
 - temas claro e escuro;
 - interface responsiva em viewport única;
 - salvamento automático no navegador;
-- exportação da sessão em texto.
+- exportação individual da sessão em TXT e JSON.
 
 ## Executar localmente
 

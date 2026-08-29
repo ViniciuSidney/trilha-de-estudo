@@ -25,6 +25,16 @@ O `body` não possui rolagem geral. Cabeçalho, navegação lateral e ações pe
 
 Perguntas, questões, erros e flashcards são apresentados individualmente para reduzir distrações e preservar o foco.
 
+## Comparação e nova tentativa
+
+A resposta-modelo de uma pergunta introdutória permanece oculta até que o estudante escreva sua própria explicação e solicite a comparação. Editar a resposta depois disso invalida somente aquela comparação.
+
+As respostas iniciais das questões nunca são sobrescritas durante a correção. As novas tentativas ficam em `quizRetryAnswers`, permitindo apresentar com honestidade o desempenho inicial e, separadamente, o que foi corrigido após estudo e reflexão. Alterar uma resposta inicial concluída exige confirmação e reinicia as etapas que dependem dela.
+
+## Encerramento baseado em dados
+
+A tela final utiliza seletores derivados do estado para calcular respostas comparadas, acertos iniciais, erros reconstruídos, novas tentativas, erros corrigidos e pendências. `finishedAt` é registrado na primeira chegada ao encerramento, impedindo que a duração continue aumentando quando uma sessão concluída é reaberta.
+
 ## Temas
 
 Claro e escuro utilizam paletas próprias. A preferência é global, fica salva localmente e se aplica a todas as sessões.

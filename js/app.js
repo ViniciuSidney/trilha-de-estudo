@@ -5,7 +5,7 @@ const { buildTheoryPrompt, buildIntroPrompt, buildQuizPrompt, buildCorrectionPro
 const navigation = window.TrilhaApp.navigation;
 const selectors = window.TrilhaApp.selectors;
 const validators = window.TrilhaApp.validators;
-const { downloadSession } = window.TrilhaApp.exporter;
+const { downloadSessionText, downloadSessionJSON } = window.TrilhaApp.exporter;
 const { createDemoState } = window.TrilhaApp.demo;
 const { createViewRenderer } = window.TrilhaApp.views;
 const { sessionName, renderHome } = window.TrilhaApp.home;
@@ -192,6 +192,7 @@ function goToStep(index) {
 function advance() {
   const patch = navigation.advance(state, steps.length);
   if (state.currentStep === 7) patch.correctionSourceSignature = correctionPrompt();
+  if (state.currentStep === steps.length - 2) patch.finishedAt = state.finishedAt || new Date().toISOString();
   state = stateManager.updateState(patch);
   saveState();
   render();
@@ -236,6 +237,14 @@ function wrongQuestions() {
   return selectors.getWrongQuestions(state);
 }
 
+function getRetryResult() {
+  return selectors.getRetryResult(state);
+}
+
+function getLearningSummary() {
+  return selectors.getLearningSummary(state);
+}
+
 viewRenderer = createViewRenderer({
   getState: () => state,
   theoryPrompt,
@@ -244,6 +253,8 @@ viewRenderer = createViewRenderer({
   correctionPrompt,
   flashcardPrompt,
   getQuizResult,
+  getRetryResult,
+  getLearningSummary,
   wrongQuestions,
 });
 
@@ -254,12 +265,14 @@ function parseIntro() {
     updateState({
       introQuestions: parsed,
       introAnswers: {},
+      introReviewed: {},
       introIndex: 0,
       introSourceTheory: state.theory,
       quizRaw: "",
       quizQuestions: [],
       quizSourceSignature: "",
       quizAnswers: {},
+      quizRetryAnswers: {},
       quizIndex: 0,
       quizFinished: false,
       consolidation: "",
@@ -269,6 +282,7 @@ function parseIntro() {
       flashcardsRaw: "",
       flashcards: [],
       flashcardIndex: 0,
+      finishedAt: "",
       maxStep: Math.min(state.maxStep, 4),
     }, true);
     showToast(`${parsed.length} perguntas importadas.`);
@@ -284,6 +298,7 @@ function parseQuiz() {
     updateState({
       quizQuestions: questions,
       quizAnswers: {},
+      quizRetryAnswers: {},
       quizIndex: 0,
       quizFinished: false,
       quizSourceSignature: quizPrompt(),
@@ -294,6 +309,7 @@ function parseQuiz() {
       flashcardsRaw: "",
       flashcards: [],
       flashcardIndex: 0,
+      finishedAt: "",
       maxStep: Math.min(state.maxStep, 6),
     }, true);
     showToast(`${questions.length} questões importadas.`);
@@ -306,7 +322,7 @@ function parseFlashcards() {
   try {
     const cards = validators.parseFlashcards(state.flashcardsRaw);
     if (state.flashcards.length && !window.confirm("Substituir os flashcards atuais? As edições feitas neles serão perdidas.")) return;
-    updateState({ flashcards: cards, flashcardIndex: 0, maxStep: Math.min(state.maxStep, 10) }, true);
+    updateState({ flashcards: cards, flashcardIndex: 0, finishedAt: "", maxStep: Math.min(state.maxStep, 10) }, true);
     showToast(`${cards.length} flashcards importados.`);
   } catch (error) {
     showToast(error.message || "Não foi possível importar os flashcards.", "error");
@@ -354,7 +370,23 @@ function render() {
 function bindDynamicEvents() {
   screen.querySelectorAll("[data-bind]").forEach((el) => {
     el.addEventListener("input", () => {
+      const previousValue = state[el.dataset.bind];
       state[el.dataset.bind] = el.value;
+      if (previousValue !== el.value && el.dataset.bind === "theory" && state.maxStep > 2) {
+        state.maxStep = 2;
+        state.finishedAt = "";
+      }
+      if (previousValue !== el.value && ["subject", "objective"].includes(el.dataset.bind) && state.maxStep > 0) {
+        state.maxStep = 0;
+        state.finishedAt = "";
+      }
+      if (previousValue !== el.value && el.dataset.bind === "consolidation" && state.maxStep > 7) {
+        state.maxStep = 7;
+        state.flashcardsRaw = "";
+        state.flashcards = [];
+        state.flashcardIndex = 0;
+        state.finishedAt = "";
+      }
       if (el.dataset.bind === "subject") sidebarSubject.textContent = el.value || "Ainda sem assunto";
       saveState();
       if (el.dataset.bind === "subject") {
@@ -366,17 +398,68 @@ function bindDynamicEvents() {
   });
 
   screen.querySelectorAll("[data-intro-answer]").forEach((el) => el.addEventListener("input", () => {
-    state.introAnswers[el.dataset.introAnswer] = el.value;
+    const index = el.dataset.introAnswer;
+    if (state.introAnswers[index] !== el.value) {
+      state.introReviewed[index] = false;
+      if (state.maxStep > 4) state.maxStep = 4;
+      state.finishedAt = "";
+      const reviewButton = screen.querySelector("[data-review-intro-button]");
+      if (reviewButton) {
+        reviewButton.textContent = "Comparar com a resposta-modelo";
+        reviewButton.disabled = !el.value.trim();
+      }
+      screen.querySelector("[data-model-answer]")?.remove();
+    }
+    state.introAnswers[index] = el.value;
     saveState();
     updateContinueAvailability();
   }));
   screen.querySelectorAll("[data-quiz-answer]").forEach((el) => el.addEventListener("change", () => {
-    state.quizAnswers[el.dataset.quizAnswer] = el.value;
+    const index = el.dataset.quizAnswer;
+    const changingFinishedQuiz = state.quizFinished && state.quizAnswers[index] !== el.value;
+    if (changingFinishedQuiz && !window.confirm("Alterar uma resposta inicial apagará a devolutiva, as correções, as novas tentativas e os flashcards desta sessão. Continuar?")) {
+      render();
+      return;
+    }
+    state.quizAnswers[index] = el.value;
+    if (changingFinishedQuiz) {
+      state.quizFinished = false;
+      state.quizRetryAnswers = {};
+      state.consolidation = "";
+      state.correctionSourceSignature = "";
+      state.errorReflections = {};
+      state.errorIndex = 0;
+      state.flashcardsRaw = "";
+      state.flashcards = [];
+      state.flashcardIndex = 0;
+      state.finishedAt = "";
+      state.maxStep = Math.min(state.maxStep, 6);
+      showToast("Etapas dependentes foram reiniciadas.");
+    }
     saveState();
     updateContinueAvailability();
   }));
+  screen.querySelectorAll("[data-retry-answer]").forEach((el) => el.addEventListener("change", () => {
+    state.quizRetryAnswers[el.dataset.retryAnswer] = el.value;
+    if (state.maxStep > 8) {
+      state.maxStep = 8;
+      state.flashcardsRaw = "";
+      state.flashcards = [];
+      state.flashcardIndex = 0;
+      state.finishedAt = "";
+    }
+    saveState();
+    render();
+  }));
   screen.querySelectorAll("[data-error-reflection]").forEach((el) => el.addEventListener("input", () => {
     state.errorReflections[el.dataset.errorReflection] = el.value;
+    if (state.maxStep > 8) {
+      state.maxStep = 8;
+      state.flashcardsRaw = "";
+      state.flashcards = [];
+      state.flashcardIndex = 0;
+      state.finishedAt = "";
+    }
     saveState();
     updateContinueAvailability();
   }));
@@ -396,22 +479,33 @@ function updateContinueAvailability() {
   const button = screenActions.querySelector('[data-action="advance"], [data-action="finish-quiz"]');
   if (!button) return;
   if (state.currentStep === 1) button.disabled = state.theory.trim().length < 80;
-  if (state.currentStep === 4) button.disabled = !state.introQuestions.length || !state.introQuestions.every((_, i) => (state.introAnswers[i] || "").trim());
+  if (state.currentStep === 4) button.disabled = !state.introQuestions.length || !state.introQuestions.every((_, i) => (state.introAnswers[i] || "").trim() && state.introReviewed?.[i]);
   if (state.currentStep === 6) button.disabled = !state.quizQuestions.length || !state.quizQuestions.every((_, i) => state.quizAnswers[i]);
   if (state.currentStep === 7) button.disabled = state.consolidation.trim().length < 50;
-  if (state.currentStep === 8) button.disabled = wrongQuestions().some(({ index }) => (state.errorReflections[index] || "").trim().length < 20);
+  if (state.currentStep === 8) button.disabled = wrongQuestions().some(({ index }) => (state.errorReflections[index] || "").trim().length < 20 || !state.quizRetryAnswers?.[index]);
   if (state.currentStep === 10) button.disabled = !state.flashcards.length || state.flashcards.some((card) => !card.front.trim() || !card.back.trim());
 }
 
 function finishQuiz() {
   if (!state.quizQuestions.every((_, i) => state.quizAnswers[i])) return;
   state.quizFinished = true;
+  state.quizRetryAnswers = {};
   advance();
 }
 
-function exportSession() {
-  downloadSession(state);
-  showToast("Sessão exportada.");
+function reviewIntroAnswer() {
+  const index = state.introIndex;
+  if (!(state.introAnswers[index] || "").trim()) return;
+  state.introReviewed[index] = true;
+  saveState();
+  render();
+}
+
+function exportSession(format) {
+  const session = sessionService.getActiveSession();
+  if (format === "json") downloadSessionJSON(state, session);
+  else downloadSessionText(state);
+  showToast(`Sessão exportada em ${format === "json" ? "JSON" : "TXT"}.`);
 }
 
 function loadDemo() {
@@ -490,6 +584,7 @@ document.addEventListener("click", (event) => {
     if (action === "advance") advance();
     if (action === "back") back();
     if (action === "parse-intro") parseIntro();
+    if (action === "review-intro") reviewIntroAnswer();
     if (action === "parse-quiz") parseQuiz();
     if (action === "finish-quiz") finishQuiz();
     if (action === "parse-flashcards") parseFlashcards();
@@ -499,7 +594,8 @@ document.addEventListener("click", (event) => {
       saveState();
       render();
     }
-    if (action === "export") exportSession();
+    if (action === "export" || action === "export-text") exportSession("text");
+    if (action === "export-json") exportSession("json");
     if (action === "print") window.print();
   }
 

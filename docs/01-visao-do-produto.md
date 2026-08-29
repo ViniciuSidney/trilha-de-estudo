@@ -13,10 +13,10 @@ Ao estudar com uma IA em uma conversa comum, o estudante precisa decidir constan
 Conduzir o usuário por um percurso previsível:
 
 1. compreender;
-2. explicar;
+2. explicar e comparar;
 3. praticar;
 4. receber uma devolutiva;
-5. reconstruir os erros;
+5. reconstruir e testar novamente os erros;
 6. preparar revisões futuras;
 7. registrar a sessão.
 

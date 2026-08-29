@@ -77,6 +77,9 @@
       if (session.state.currentStep === steps.length - 1) {
         session.status = "completed";
         session.completedAt ||= now;
+      } else if (session.state.maxStep < steps.length - 1) {
+        session.status = "in_progress";
+        session.completedAt = null;
       }
       return persist();
     }

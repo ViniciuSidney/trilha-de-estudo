@@ -84,6 +84,15 @@
     requireStringRecord(state.introAnswers, `As respostas introdutórias da sessão ${sessionNumber}`);
     requireStringRecord(state.quizAnswers, `As respostas objetivas da sessão ${sessionNumber}`);
     requireStringRecord(state.errorReflections, `As correções da sessão ${sessionNumber}`);
+    if (state.introReviewed !== undefined) {
+      if (!isObject(state.introReviewed) || Object.values(state.introReviewed).some((value) => typeof value !== "boolean")) {
+        throw new BackupValidationError(`As revisões introdutórias da sessão ${sessionNumber} são inválidas.`);
+      }
+    }
+    if (state.quizRetryAnswers !== undefined) requireStringRecord(state.quizRetryAnswers, `As respostas refeitas da sessão ${sessionNumber}`);
+    if (state.finishedAt !== undefined && (typeof state.finishedAt !== "string" || (state.finishedAt && !validDate(state.finishedAt)))) {
+      throw new BackupValidationError(`A data final da sessão ${sessionNumber} é inválida.`);
+    }
 
     validateIntroQuestions(state.introQuestions, sessionNumber);
     validateQuizQuestions(state.quizQuestions, sessionNumber);

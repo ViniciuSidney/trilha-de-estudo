@@ -1,7 +1,7 @@
 (function initializeHome(global) {
   const { steps } = global.TrilhaApp.config;
   const { escapeHTML } = global.TrilhaApp.utils;
-  const { getQuizResult } = global.TrilhaApp.selectors;
+  const { getLearningSummary } = global.TrilhaApp.selectors;
 
   function sessionName(session) {
     return session.title || session.subject || "Sessão sem título";
@@ -19,8 +19,10 @@
   }
 
   function performanceOf(session) {
-    const result = getQuizResult(session.state);
-    return result.total ? `${result.correct}/${result.total} · ${result.percentage}%` : "Ainda sem questões";
+    const summary = getLearningSummary(session.state);
+    if (!summary.quiz.total) return "Ainda sem questões";
+    const correction = summary.retry.total ? ` · ${summary.retry.corrected}/${summary.retry.total} corrigidos` : "";
+    return `${summary.quiz.correct}/${summary.quiz.total} · ${summary.quiz.percentage}%${correction}`;
   }
 
   function renderSessionCard(session) {

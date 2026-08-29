@@ -8,7 +8,6 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 
 ### Planejado
 
-- conclusão da experiência de aprendizagem;
 - revisão de acessibilidade e responsividade para a `v0.1.0`.
 
 ### Adicionado
@@ -22,6 +21,11 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - exportação de backup completo em JSON;
 - importação com validação estrutural, limite de tamanho e prévia;
 - restauração confirmada de configurações e sessões;
+- comparação controlada com respostas-modelo nas perguntas introdutórias;
+- nova tentativa das questões erradas com registro separado;
+- resumo final baseado no desempenho inicial e na consolidação;
+- exportação individual de sessões em TXT e JSON;
+- registro do instante de conclusão para cálculo estável da duração;
 - armazenamento interno com `schemaVersion: 2`;
 - migração automática do estado plano do protótipo;
 - migração automática do envelope `schemaVersion: 1`;
@@ -36,7 +40,9 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - `app.js` reduzido ao papel de orquestrador do DOM e dos eventos;
 - mensagens de importação agora identificam estruturas e campos inválidos;
 - respostas da IA são validadas integralmente antes da confirmação de substituição;
-- erros de importação permanecem visíveis por mais tempo e não alteram o conteúdo atual.
+- erros de importação permanecem visíveis por mais tempo e não alteram o conteúdo atual;
+- alterações em conteúdos anteriores invalidam somente as etapas dependentes;
+- o desempenho inicial permanece preservado após novas tentativas.
 
 ## [prototype-v0.4] — 2026-08-29
 

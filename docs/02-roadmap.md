@@ -40,11 +40,11 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 
 ### Fase 4 — conclusão da experiência
 
-- [ ] usar as respostas-modelo nas perguntas introdutórias;
-- [ ] permitir refazer questões erradas;
-- [ ] registrar erros corrigidos;
-- [ ] gerar um resumo final com resultados reais;
-- [ ] exportar a sessão completa em TXT e JSON.
+- [x] usar as respostas-modelo nas perguntas introdutórias;
+- [x] permitir refazer questões erradas;
+- [x] registrar erros corrigidos;
+- [x] gerar um resumo final com resultados reais;
+- [x] exportar a sessão completa em TXT e JSON.
 
 ### Fase 5 — qualidade e lançamento
 

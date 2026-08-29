@@ -33,9 +33,11 @@
         2: "O comprimento de onda diminui.",
         3: "A velocidade e o comprimento podem mudar, mas a frequência fica igual.",
       },
+      introReviewed: { 0: true, 1: true, 2: true, 3: true },
       quizRaw: JSON.stringify({ questions: quizQuestions }, null, 2),
       quizQuestions,
       quizAnswers: { 0: "C", 1: "A", 2: "B", 3: "B", 4: "D" },
+      quizRetryAnswers: { 2: "C" },
       consolidation: "## Diagnóstico\nVocê compreendeu bem as definições de frequência e período, mas confundiu a aplicação da fórmula da velocidade na questão 3.\n\n## Ponto de atenção\nEm v = λ · f, as unidades precisam ser lidas antes da multiplicação. Com λ = 3 m e f = 2 Hz, o resultado é 6 m/s.\n\n## Síntese\nMantenha separadas as ideias de frequência, amplitude e velocidade. Elas descrevem propriedades diferentes da onda.",
       errorReflections: { 2: "Eu somei ou escolhi um valor sem aplicar corretamente a fórmula. O correto é multiplicar 3 m por 2 Hz, chegando a 6 m/s." },
       flashcards: [
