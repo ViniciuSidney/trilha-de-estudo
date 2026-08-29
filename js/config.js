@@ -1,4 +1,6 @@
 (function initializeConfig(global) {
+  const APP_NAME = "Trilha de Estudo";
+  const SCHEMA_VERSION = 1;
   const STORAGE_KEY = "trilha-estudo-prototipo-v4";
 
   const phases = [
@@ -44,5 +46,5 @@
   }
 
   global.TrilhaApp = global.TrilhaApp || {};
-  global.TrilhaApp.config = { STORAGE_KEY, phases, steps, createInitialState };
+  global.TrilhaApp.config = { APP_NAME, SCHEMA_VERSION, STORAGE_KEY, phases, steps, createInitialState };
 })(window);

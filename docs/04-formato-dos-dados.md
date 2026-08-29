@@ -1,6 +1,6 @@
 # Formato dos dados
 
-## Estado atual
+## Formato legado — prototype-v0.4
 
 A base `prototype-v0.4` mantém uma única sessão no `localStorage`, usando a chave:
 
@@ -21,7 +21,28 @@ O objeto contém:
 - flashcards;
 - índices de navegação dos itens.
 
-## Modelo planejado para a v0.1.0
+Ao encontrar esse formato plano, a aplicação o normaliza e o converte para o modelo versionado no próximo salvamento.
+
+## Armazenamento interno — schemaVersion 1
+
+A fundação da `v0.1.0` mantém temporariamente uma sessão ativa, mas passa a armazená-la em um envelope versionado:
+
+```json
+{
+  "app": "Trilha de Estudo",
+  "schemaVersion": 1,
+  "savedAt": "2026-08-29T00:00:00.000Z",
+  "state": {}
+}
+```
+
+- `state` preserva todos os campos utilizados pelo protótipo;
+- campos ausentes recebem valores iniciais seguros;
+- coleções com tipos inválidos são normalizadas;
+- dados legados sem `schemaVersion` são reconhecidos automaticamente;
+- versões incompatíveis não são sobrescritas silenciosamente.
+
+## Modelo de backup e múltiplas sessões planejado
 
 ```json
 {

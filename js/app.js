@@ -1,4 +1,5 @@
-const { STORAGE_KEY, phases, steps, createInitialState } = window.TrilhaApp.config;
+const { phases, steps, createInitialState } = window.TrilhaApp.config;
+const { loadState, saveState: persistState } = window.TrilhaApp.storage;
 const initialState = createInitialState();
 
 let state = loadState();
@@ -34,18 +35,13 @@ function toggleTheme() {
   saveState();
 }
 
-function loadState() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return saved ? { ...initialState, ...saved } : structuredClone(initialState);
-  } catch {
-    return structuredClone(initialState);
-  }
-}
-
 function saveState() {
   saveStatus.textContent = "Salvando…";
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const result = persistState(state);
+  if (!result.ok) {
+    saveStatus.textContent = result.reason === "incompatible-schema" ? "Versão de dados incompatível" : "Não foi possível salvar";
+    return;
+  }
   window.setTimeout(() => (saveStatus.textContent = "Tudo salvo"), 220);
 }
 

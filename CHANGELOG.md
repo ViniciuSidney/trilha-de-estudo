@@ -13,6 +13,18 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 - backup e restauração em JSON;
 - validações mais robustas das respostas da IA.
 
+### Adicionado
+
+- módulo de configuração compartilhada;
+- armazenamento interno com `schemaVersion: 1`;
+- migração automática do estado plano do protótipo;
+- normalização de campos essenciais antes de carregar ou salvar.
+
+### Alterado
+
+- persistência isolada no módulo `storage.js`;
+- proteção contra sobrescrita de versões de dados incompatíveis.
+
 ## [prototype-v0.4] — 2026-08-29
 
 ### Adicionado
