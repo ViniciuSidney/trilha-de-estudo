@@ -11,13 +11,14 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
+    <a class="skip-link" href="#screen">Pular para o conteúdo principal</a>
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Etapas da sessão">
+      <aside id="sidebar" class="sidebar" aria-label="Etapas da sessão">
         <div class="brand">
           <div class="brand-mark" aria-hidden="true">T</div>
           <div>
             <strong>Trilha de Estudo</strong>
-            <span>Base oficial · protótipo v0.4</span>
+            <span>Em desenvolvimento · v0.1.0</span>
           </div>
         </div>
 
@@ -33,19 +34,26 @@
 
         <div class="sidebar-footer">
           <span>Salvamento automático no navegador</span>
+          <button id="homeButton" class="text-button" type="button">← Todas as sessões</button>
           <button id="resetButton" class="text-button danger" type="button">Recomeçar sessão</button>
         </div>
       </aside>
 
-      <main class="main-area">
+      <button id="menuBackdrop" class="menu-backdrop" type="button" aria-label="Fechar menu de etapas" hidden></button>
+
+      <main id="mainContent" class="main-area">
         <header class="topbar">
-          <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Abrir etapas">☰</button>
+          <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Abrir etapas" aria-controls="sidebar" aria-expanded="false">☰</button>
+          <div class="home-brand" aria-label="Trilha de Estudo">
+            <div class="brand-mark" aria-hidden="true">T</div>
+            <div><strong>Trilha de Estudo</strong><span>Sessões locais</span></div>
+          </div>
           <div class="progress-block">
             <div class="progress-meta">
               <span id="progressLabel">Etapa 1 de 10</span>
-              <span id="saveStatus">Tudo salvo</span>
+              <span id="saveStatus" role="status" aria-live="polite">Tudo salvo</span>
             </div>
-            <div class="progress-track" aria-hidden="true">
+            <div id="progressTrack" class="progress-track" role="progressbar" aria-label="Progresso da trilha" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
               <div id="progressBar" class="progress-bar"></div>
             </div>
           </div>
@@ -59,7 +67,7 @@
         </header>
 
         <div class="screen-frame">
-          <section id="screen" class="screen" aria-live="polite">
+          <section id="screen" class="screen" tabindex="-1" aria-labelledby="screenTitle">
             <div id="screenContent" class="screen-content"></div>
           </section>
           <footer id="screenActions" class="screen-actions" aria-label="Navegação da etapa"></footer>
@@ -67,7 +75,67 @@
       </main>
     </div>
 
+    <input id="backupFileInput" type="file" accept=".json,application/json" hidden />
+    <div id="backupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle" hidden>
+      <div class="modal-backdrop" data-backup-close></div>
+      <section class="modal-panel" tabindex="-1" aria-describedby="backupModalDescription">
+        <div class="modal-heading">
+          <div>
+            <span class="eyebrow">Restauração segura</span>
+            <h2 id="backupModalTitle">Revisar backup</h2>
+          </div>
+          <button class="icon-button" type="button" data-backup-close aria-label="Fechar">×</button>
+        </div>
+        <p id="backupModalDescription" class="sr-only">Revise os dados do arquivo antes de substituir o histórico salvo neste navegador.</p>
+        <div id="backupPreview"></div>
+        <div class="modal-actions">
+          <button class="button secondary" type="button" data-backup-close>Cancelar</button>
+          <button id="restoreBackupButton" class="button" type="button">Restaurar backup</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="actionModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle" aria-describedby="actionModalMessage" hidden>
+      <div class="modal-backdrop" data-dialog-cancel></div>
+      <section class="modal-panel action-modal-panel" tabindex="-1">
+        <div class="modal-heading">
+          <div class="dialog-heading-copy">
+            <span id="actionModalEyebrow" class="eyebrow">Confirmação</span>
+            <h2 id="actionModalTitle">Confirmar ação</h2>
+          </div>
+          <button class="icon-button" type="button" data-dialog-cancel aria-label="Fechar">×</button>
+        </div>
+        <div class="dialog-content">
+          <div id="actionModalIcon" class="dialog-icon" aria-hidden="true">?</div>
+          <p id="actionModalMessage"></p>
+        </div>
+        <div id="actionModalField" class="field" hidden>
+          <label id="actionModalInputLabel" for="actionModalInput">Novo valor</label>
+          <input id="actionModalInput" type="text" maxlength="90" autocomplete="off" />
+          <span id="actionModalHint" class="hint"></span>
+        </div>
+        <div class="modal-actions">
+          <button id="actionModalCancel" class="button secondary" type="button" data-dialog-cancel>Cancelar</button>
+          <button id="actionModalConfirm" class="button" type="button">Confirmar</button>
+        </div>
+      </section>
+    </div>
+
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/sessions.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/prompts.js"></script>
+    <script src="js/selectors.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/validators.js"></script>
+    <script src="js/backup.js"></script>
+    <script src="js/exporter.js"></script>
+    <script src="js/demo.js"></script>
+    <script src="js/views.js"></script>
+    <script src="js/home.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>

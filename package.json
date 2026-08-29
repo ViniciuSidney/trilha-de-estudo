@@ -1,0 +1,11 @@
+{
+  "name": "trilha-de-estudo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Trilha linear de estudos apoiada por IA, local-first e sem dependências.",
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "check": "node --check js/app.js && node tests/run-tests.js"
+  },
+  "license": "MIT"
+}

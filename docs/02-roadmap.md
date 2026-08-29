@@ -10,50 +10,75 @@
 - [x] revisar largura, alinhamento e espaçamentos;
 - [x] preparar a estrutura inicial do repositório.
 
-## Fase 1 — fundação da v0.1.0
+## Escopo aprovado da v0.1.0
 
-- [ ] dividir o JavaScript em módulos;
-- [ ] criar um modelo de dados versionado;
-- [ ] centralizar persistência e migrações;
-- [ ] separar renderização, regras de negócio e eventos;
-- [ ] manter compatibilidade com o fluxo atual.
+A primeira versão oficial deverá transformar o protótipo validado em uma aplicação local confiável, preservando seu fluxo de estudo e evitando mudanças visuais de grande porte.
 
-## Fase 2 — sessões
+### Fase 1 — fundação técnica
 
-- [ ] criar tela inicial;
-- [ ] permitir iniciar e continuar sessões;
-- [ ] criar histórico local;
-- [ ] permitir renomear, duplicar e excluir sessões;
-- [ ] registrar data, duração, progresso e desempenho.
+- [x] dividir o JavaScript em módulos;
+- [x] separar estado, armazenamento, navegação, prompts, validações e interface;
+- [x] criar um modelo de dados versionado;
+- [x] centralizar persistência e migrações;
+- [x] manter compatibilidade com o fluxo atual e com a sessão demonstrativa.
 
-## Fase 3 — dados e importação
+### Fase 2 — múltiplas sessões
 
-- [ ] exportar e importar backup JSON;
-- [ ] validar versão do backup;
-- [ ] validar estruturas recebidas da IA;
-- [ ] melhorar mensagens de erro;
-- [ ] permitir revisar dados antes de substituir conteúdo.
+- [x] criar tela inicial para começar ou continuar estudos;
+- [x] criar histórico local de sessões;
+- [x] permitir criar, continuar, renomear, duplicar e excluir sessões;
+- [x] salvar cada sessão de maneira independente;
+- [x] registrar assunto, data, progresso e desempenho.
 
-## Fase 4 — aprendizagem
+### Fase 3 — dados confiáveis
 
-- [ ] usar efetivamente as respostas-modelo das perguntas introdutórias;
-- [ ] permitir refazer questões erradas;
-- [ ] registrar erros corrigidos;
-- [ ] aprimorar o resumo final;
-- [ ] exportar flashcards para o FlashCore.
+- [x] exportar e importar backup completo em JSON;
+- [x] validar a versão e a estrutura dos backups;
+- [x] validar estruturas recebidas da IA antes de substituir conteúdo;
+- [x] apresentar mensagens de erro claras;
+- [x] preservar o conteúdo preenchido quando uma importação falhar.
 
-## Fase 5 — qualidade e lançamento
+### Fase 4 — conclusão da experiência
 
-- [ ] revisar acessibilidade e atalhos de teclado;
-- [ ] executar testes em desktop, tablet e celular;
-- [ ] testar recuperação e migração de dados;
-- [ ] atualizar toda a documentação;
-- [ ] fechar e publicar a v0.1.0.
+- [x] usar as respostas-modelo nas perguntas introdutórias;
+- [x] permitir refazer questões erradas;
+- [x] registrar erros corrigidos;
+- [x] gerar um resumo final com resultados reais;
+- [x] exportar a sessão completa em TXT e JSON.
 
-## Ideias posteriores
+### Fase 5 — qualidade e lançamento
 
-- integração opcional com APIs de IA;
+- [x] revisar acessibilidade básica e navegação por teclado;
+- [x] executar testes em desktop, tablet e celular;
+- [x] testar recuperação, importação e migração de dados;
+- [x] atualizar a documentação e o changelog;
+- [x] preparar o fechamento da tag e da release `v0.1.0`.
+
+A base foi aprovada em testes automatizados e manuais. A integração em `main`, a tag e a publicação da release encerram formalmente este ciclo.
+
+### Fase 5.1 — refinamento pré-release
+
+- [x] substituir confirmações e entradas nativas por modais próprios;
+- [x] manter foco, teclado e semântica acessível nos novos diálogos;
+- [x] tornar a correção imediata mais visual e explicativa;
+- [x] ajustar distâncias entre campos, ações e painéis;
+- [x] revisar a interface preservando os componentes já aprovados.
+
+## Critérios de conclusão
+
+- o fluxo completo do protótipo continua funcional;
+- múltiplas sessões podem ser administradas sem conflito de dados;
+- backups válidos são restaurados e entradas inválidas são rejeitadas com segurança;
+- recarregar ou fechar o navegador não perde o progresso salvo;
+- a aplicação permanece utilizável nos temas claro e escuro e nos tamanhos de tela testados;
+- a versão publicada possui documentação, changelog, tag e release.
+
+## Fora do escopo da v0.1.0
+
+- integração direta com APIs de IA;
+- contas e sincronização em nuvem;
 - PWA e instalação no dispositivo;
-- sincronização opcional;
-- integração com Concept Compass, Study Stack e FlashCore;
-- métricas históricas de aprendizagem.
+- integração direta com Concept Compass, Study Stack, FlashCore ou outros projetos;
+- sistema próprio de repetição espaçada;
+- grandes mudanças na identidade visual ou no fluxo principal;
+- métricas históricas avançadas de aprendizagem.
