@@ -20,7 +20,7 @@ A primeira versão oficial deverá transformar o protótipo validado em uma apli
 - [x] separar estado, armazenamento, navegação, prompts, validações e interface;
 - [x] criar um modelo de dados versionado;
 - [x] centralizar persistência e migrações;
-- [ ] manter compatibilidade com o fluxo atual e com a sessão demonstrativa.
+- [x] manter compatibilidade com o fluxo atual e com a sessão demonstrativa.
 
 ### Fase 2 — múltiplas sessões
 
