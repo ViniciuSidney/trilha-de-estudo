@@ -192,6 +192,16 @@ test("gera uma pergunta introdutória para cada tópico", () => {
   const valid = state.topics.map((topic) => ({ question: `Explique ${topic.title}`, modelAnswer: topic.objective }));
   assert.equal(app.validators.parseIntro(JSON.stringify(valid), state.topics.length).length, state.topics.length);
   assert.throws(() => app.validators.parseIntro(JSON.stringify(valid.slice(1)), state.topics.length), /uma para cada tópico/);
+
+  const malformedLatex = String.raw`[{"question":"Como calcular uma fração?","modelAnswer":"Use \(x = \frac{1}{2}\) e \theta para representar o ângulo."}]`;
+  const recovered = app.validators.parseIntro(malformedLatex, 1);
+  assert.match(recovered[0].modelAnswer, /\\frac\{1\}\{2\}/);
+  assert.match(recovered[0].modelAnswer, /\\theta/);
+  assert.equal(app.validators.getLastJSONRepairCount(), 4);
+
+  const validNewline = String.raw`[{"question":"Linha 1\nLinha 2","modelAnswer":"Resposta"}]`;
+  assert.match(app.validators.parseIntro(validNewline, 1)[0].question, /Linha 1\nLinha 2/);
+  assert.equal(app.validators.getLastJSONRepairCount(), 0);
 });
 
 test("inclui recursos essenciais de acessibilidade e reflow", () => {

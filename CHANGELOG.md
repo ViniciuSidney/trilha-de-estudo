@@ -9,6 +9,7 @@ O formato segue os princípios do Keep a Changelog e o projeto adotará versiona
 ### Refinamentos da fundação v0.2
 
 - adicionada renderização local e segura de fórmulas LaTeX com KaTeX;
+- adicionada recuperação automática de barras LaTeX inválidas dentro de respostas JSON;
 - diferenciados delimitadores matemáticos de valores monetários como `R$ 100`;
 - ajustado o prompt introdutório para gerar uma pergunta por tópico;
 - orientados os prompts a usar delimitadores LaTeX consistentes.

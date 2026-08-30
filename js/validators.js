@@ -1,5 +1,6 @@
 (function initializeValidators(global) {
-  const { stripCodeFence } = global.TrilhaApp.utils;
+  const { stripCodeFence, repairJSONLatexEscapes } = global.TrilhaApp.utils;
+  let lastJSONRepairCount = 0;
 
   class ImportValidationError extends Error {
     constructor(message) {
@@ -10,11 +11,19 @@
 
   function parseJSON(raw) {
     if (!String(raw || "").trim()) throw new ImportValidationError("Cole primeiro a resposta recebida da IA.");
+    lastJSONRepairCount = 0;
     try {
-      return JSON.parse(stripCodeFence(raw));
+      const repaired = repairJSONLatexEscapes(stripCodeFence(raw));
+      const parsed = JSON.parse(repaired.value);
+      lastJSONRepairCount = repaired.repairs;
+      return parsed;
     } catch {
-      throw new ImportValidationError("O conteúdo não é um JSON válido. Confira vírgulas, aspas e chaves.");
+      throw new ImportValidationError("O conteúdo não é um JSON válido. Confira vírgulas, aspas e chaves; barras de fórmulas LaTeX são ajustadas automaticamente.");
     }
+  }
+
+  function getLastJSONRepairCount() {
+    return lastJSONRepairCount;
   }
 
   function requiredText(value, field) {
@@ -101,5 +110,5 @@
     });
   }
 
-  global.TrilhaApp.validators = { ImportValidationError, parseTopics, parseIntro, parseQuiz, parseFlashcards };
+  global.TrilhaApp.validators = { ImportValidationError, parseTopics, parseIntro, parseQuiz, parseFlashcards, getLastJSONRepairCount };
 })(window);

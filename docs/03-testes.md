@@ -156,6 +156,7 @@ O workflow `Verificações` executa `npm run check` automaticamente em pushes pa
 - [x] gerar TXT com hierarquia e tópicos;
 - [x] renderizar tabela Markdown, negrito em células e HTML escapado;
 - [x] reconhecer fórmulas LaTeX sem interpretar `R$` como delimitador;
+- [x] recuperar escapes LaTeX inválidos sem alterar escapes JSON legítimos;
 - [x] gerar e validar exatamente uma pergunta introdutória por tópico;
 - [x] executar doze verificações automatizadas sem regressões.
 

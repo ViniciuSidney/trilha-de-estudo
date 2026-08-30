@@ -433,9 +433,15 @@ function invalidateTopicDependents() {
   state.maxStep = Math.min(state.maxStep, STEP_INDEX["topics-review"]);
 }
 
+function latexRepairMessage(count) {
+  if (!count) return "";
+  return ` ${count} ${count === 1 ? "barra de LaTeX foi ajustada" : "barras de LaTeX foram ajustadas"} automaticamente.`;
+}
+
 async function parseTopics() {
   try {
     const topics = validators.parseTopics(state.topicsRaw);
+    const repairCount = validators.getLastJSONRepairCount();
     if (state.topics.length && !await confirmAction({
       eyebrow: "Planejamento",
       title: "Substituir os tópicos atuais?",
@@ -450,7 +456,7 @@ async function parseTopics() {
       ...resetAfterTopics(),
       maxStep: Math.min(state.maxStep, STEP_INDEX["topics-review"]),
     }, true);
-    showToast(`${topics.length} tópicos importados.`);
+    showToast(`${topics.length} tópicos importados.${latexRepairMessage(repairCount)}`);
   } catch (error) {
     showToast(error.message || "Não foi possível importar os tópicos.", "error");
   }
@@ -459,6 +465,7 @@ async function parseTopics() {
 async function parseIntro() {
   try {
     const parsed = validators.parseIntro(state.introRaw, state.topics.length);
+    const repairCount = validators.getLastJSONRepairCount();
     if (state.introQuestions.length && !await confirmAction({
       eyebrow: "Perguntas iniciais",
       title: "Substituir perguntas importadas?",
@@ -489,7 +496,7 @@ async function parseIntro() {
       finishedAt: "",
       maxStep: Math.min(state.maxStep, STEP_INDEX["intro-answer"]),
     }, true);
-    showToast(`${parsed.length} perguntas importadas.`);
+    showToast(`${parsed.length} perguntas importadas.${latexRepairMessage(repairCount)}`);
   } catch (error) {
     showToast(error.message || "Não foi possível importar as perguntas.", "error");
   }
@@ -498,6 +505,7 @@ async function parseIntro() {
 async function parseQuiz() {
   try {
     const questions = validators.parseQuiz(state.quizRaw);
+    const repairCount = validators.getLastJSONRepairCount();
     if (state.quizQuestions.length && !await confirmAction({
       eyebrow: "Questões objetivas",
       title: "Substituir questões atuais?",
@@ -522,7 +530,7 @@ async function parseQuiz() {
       finishedAt: "",
       maxStep: Math.min(state.maxStep, STEP_INDEX["quiz-answer"]),
     }, true);
-    showToast(`${questions.length} questões importadas.`);
+    showToast(`${questions.length} questões importadas.${latexRepairMessage(repairCount)}`);
   } catch (error) {
     showToast(error.message || "Não foi possível importar as questões.", "error");
   }
@@ -531,6 +539,7 @@ async function parseQuiz() {
 async function parseFlashcards() {
   try {
     const cards = validators.parseFlashcards(state.flashcardsRaw);
+    const repairCount = validators.getLastJSONRepairCount();
     if (state.flashcards.length && !await confirmAction({
       eyebrow: "Flashcards",
       title: "Substituir flashcards atuais?",
@@ -539,7 +548,7 @@ async function parseFlashcards() {
       tone: "warning",
     })) return;
     updateState({ flashcards: cards, flashcardIndex: 0, finishedAt: "", maxStep: Math.min(state.maxStep, STEP_INDEX["flashcards-review"]) }, true);
-    showToast(`${cards.length} flashcards importados.`);
+    showToast(`${cards.length} flashcards importados.${latexRepairMessage(repairCount)}`);
   } catch (error) {
     showToast(error.message || "Não foi possível importar os flashcards.", "error");
   }

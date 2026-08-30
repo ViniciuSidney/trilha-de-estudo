@@ -1,6 +1,6 @@
 {
   "name": "trilha-de-estudo",
-  "version": "0.2.0-dev.2",
+  "version": "0.2.0-dev.3",
   "private": true,
   "description": "Trilha linear de estudos apoiada por IA, local-first e sem dependências.",
   "scripts": {

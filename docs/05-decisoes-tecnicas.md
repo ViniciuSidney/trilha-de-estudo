@@ -115,3 +115,5 @@ O renderizador permanece local e sem dependências externas. O conteúdo é esca
 ## Fórmulas LaTeX
 
 O KaTeX e suas fontes são versionados em `vendor/`, sem carregamento por CDN. A camada de utilidades reconhece `\\( ... \\)`, `\\[ ... \\]`, `$...$` e `$$...$$`, ignora campos editáveis e preserva valores monetários como `R$ 100`. A renderização mantém MathML para tecnologias assistivas e desabilita comandos confiáveis para não permitir HTML arbitrário vindo do conteúdo da IA.
+
+Antes da validação de uma resposta JSON, o importador examina somente barras invertidas localizadas dentro de campos textuais. Delimitadores e comandos LaTeX sem escape são duplicados automaticamente, enquanto escapes legítimos do JSON, como quebra de linha, aspas e Unicode, permanecem intactos. A correção não tenta reconstruir vírgulas, aspas ou estruturas ausentes; esses erros continuam bloqueando a importação.

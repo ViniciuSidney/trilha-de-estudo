@@ -187,5 +187,58 @@
     return raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   }
 
-  global.TrilhaApp.utils = { escapeHTML, renderMarkdown, tokenizeMath, renderMath, stripCodeFence };
+  const latexCommandsThatMimicJSONEscapes = new Set([
+    "backslash", "bar", "because", "begin", "beta", "bf", "big", "binom", "bmod", "boldsymbol", "boxed", "brace", "breve",
+    "frac", "fbox", "forall", "frown", "gamma", "hat", "hbar", "href", "left", "lim",
+    "ln", "mathbb", "mathbf", "mathcal", "mathit", "mathrm", "mathsf", "mathtt",
+    "nabla", "neg", "neq", "newcommand", "nexists", "ngeq", "nleq", "not", "notin", "nu", "overbrace", "overline", "phantom",
+    "qquad", "quad", "rangle", "rbrace", "rceil", "rfloor", "rho", "right", "rightarrow", "rm", "root", "rule", "sqrt",
+    "tan", "tau", "text", "textbf", "textit", "therefore", "theta", "tilde", "times", "to", "top", "triangle",
+    "underbrace", "underline", "underset", "uparrow", "vec",
+  ]);
+
+  function repairJSONLatexEscapes(raw = "") {
+    const value = String(raw);
+    let output = "";
+    let inString = false;
+    let repairs = 0;
+
+    for (let index = 0; index < value.length; index += 1) {
+      const character = value[index];
+      if (character === '"') {
+        inString = !inString;
+        output += character;
+        continue;
+      }
+      if (!inString || character !== "\\") {
+        output += character;
+        continue;
+      }
+
+      const next = value[index + 1] || "";
+      if (next === "\\" || next === '"' || next === "/") {
+        output += character + next;
+        index += 1;
+        continue;
+      }
+
+      const command = value.slice(index + 1).match(/^[A-Za-z]+/)?.[0] || "";
+      const validUnicodeEscape = next === "u" && /^[0-9a-fA-F]{4}$/.test(value.slice(index + 2, index + 6));
+      const validSimpleEscape = "bfnrt".includes(next);
+      const looksLikeLatex = latexCommandsThatMimicJSONEscapes.has(command);
+
+      if ((validSimpleEscape || validUnicodeEscape) && !looksLikeLatex) {
+        output += character + next;
+        index += 1;
+        continue;
+      }
+
+      output += "\\\\";
+      repairs += 1;
+    }
+
+    return { value: output, repairs };
+  }
+
+  global.TrilhaApp.utils = { escapeHTML, renderMarkdown, tokenizeMath, renderMath, stripCodeFence, repairJSONLatexEscapes };
 })(window);
