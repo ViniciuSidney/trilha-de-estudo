@@ -9,8 +9,8 @@ Confirmar que o fluxo principal permanece utilizável, que os dados são preserv
 - [x] verificar a sintaxe de todos os arquivos JavaScript;
 - [x] testar estado, navegação, seletores e exportação;
 - [x] testar importações válidas e inválidas;
-- [x] renderizar programaticamente as doze telas;
-- [x] conferir o balanceamento estrutural dos painéis das doze telas;
+- [x] renderizar programaticamente todas as telas do fluxo;
+- [x] conferir o balanceamento estrutural dos painéis do fluxo;
 - [x] carregar a aplicação e a demonstração com um DOM simulado;
 - [x] confirmar o repositório local com `schemaVersion: 2`;
 - [x] migrar automaticamente dados planos e o envelope `schemaVersion: 1`;
@@ -155,7 +155,9 @@ O workflow `Verificações` executa `npm run check` automaticamente em pushes pa
 - [x] preservar exportações individuais da v0.1.0 durante os testes;
 - [x] gerar TXT com hierarquia e tópicos;
 - [x] renderizar tabela Markdown, negrito em células e HTML escapado;
-- [x] executar dez verificações automatizadas sem regressões.
+- [x] reconhecer fórmulas LaTeX sem interpretar `R$` como delimitador;
+- [x] gerar e validar exatamente uma pergunta introdutória por tópico;
+- [x] executar doze verificações automatizadas sem regressões.
 
 ## Critério mínimo para uma versão
 

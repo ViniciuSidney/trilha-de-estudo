@@ -127,7 +127,7 @@
           <div class="field">
             <label for="theory">Panorama recebido</label>
             <textarea id="theory" class="paste-box" data-bind="theory" placeholder="Cole aqui a base teórica recebida…">${escapeHTML(state.theory)}</textarea>
-            <span class="hint">Aceita títulos, listas e negritos simples em Markdown.</span>
+            <span class="hint">Aceita títulos, listas, tabelas, negritos e fórmulas em LaTeX.</span>
           </div>
         </div></div>
         ${buttonRow({ nextDisabled: state.theory.trim().length < 80, nextLabel: "Ir para a leitura" })}`;
@@ -147,7 +147,7 @@
       return `
         <span class="eyebrow">Perguntas iniciais · Preparação</span>
         <h1>Prepare as perguntas, sem respondê-las ainda.</h1>
-        <p class="lead">Esta tela existe somente para o copia e cola com a IA. Depois da importação, a próxima tela mostrará apenas as perguntas.</p>
+        <p class="lead">O prompt cria uma pergunta para cada tópico planejado. Depois da importação, a próxima tela mostrará apenas as perguntas.</p>
         ${outdated ? '<div class="notice"><span>!</span><div><strong>Conteúdo possivelmente desatualizado</strong>A base teórica mudou depois desta importação. Gere e importe novas perguntas antes de continuar.</div></div>' : ""}
         <div class="prepare-grid">
         <div class="card">

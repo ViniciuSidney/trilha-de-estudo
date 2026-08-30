@@ -56,7 +56,7 @@ test("calcula aprendizagem ativa sem alterar o resultado inicial", () => {
   assert.deepEqual(JSON.parse(JSON.stringify(summary.quiz)), { total: 5, correct: 4, wrong: 1, percentage: 80 });
   assert.equal(summary.retry.corrected, 1);
   assert.equal(summary.retry.remaining, 0);
-  assert.equal(summary.intro.reviewed, 4);
+  assert.equal(summary.intro.reviewed, 3);
 });
 
 test("gera exportações individuais completas", () => {
@@ -168,6 +168,30 @@ test("renderiza tabelas Markdown com segurança e reflow interno", () => {
   assert.match(rendered, /<th scope="col">Conceito<\/th>/);
   assert.match(rendered, /<strong>5 Hz<\/strong>/);
   assert.doesNotMatch(app.utils.renderMarkdown("<script>alert(1)</script>"), /<script>/);
+});
+
+test("reconhece LaTeX sem confundir valores monetários", () => {
+  const tokens = app.utils.tokenizeMath("A taxa é $20\\%$ e o total é R$ 150. Também: \\(v = \\lambda f\\) e \\[T = 1/f\\].");
+  const formulas = tokens.filter((token) => token.type === "math");
+  assert.equal(formulas.length, 3);
+  assert.equal(formulas[0].value, "20\\%");
+  assert.equal(formulas[1].value, "v = \\lambda f");
+  assert.equal(formulas[2].displayMode, true);
+  assert.ok(tokens.some((token) => token.type === "text" && token.value.includes("R$ 150")));
+  const katex = require(path.join(root, "vendor", "katex.min.js"));
+  assert.match(katex.renderToString("\\frac{20}{100}", { throwOnError: false }), /class="katex"/);
+});
+
+test("gera uma pergunta introdutória para cada tópico", () => {
+  const state = app.demo.createDemoState("light");
+  const prompt = app.prompts.buildIntroPrompt(state);
+  assert.match(prompt, new RegExp(`exatamente ${state.topics.length} perguntas`));
+  assert.match(prompt, /uma para cada tópico planejado/);
+  state.topics.forEach((topic) => assert.match(prompt, new RegExp(topic.title)));
+  assert.match(prompt, /LaTeX/);
+  const valid = state.topics.map((topic) => ({ question: `Explique ${topic.title}`, modelAnswer: topic.objective }));
+  assert.equal(app.validators.parseIntro(JSON.stringify(valid), state.topics.length).length, state.topics.length);
+  assert.throws(() => app.validators.parseIntro(JSON.stringify(valid.slice(1)), state.topics.length), /uma para cada tópico/);
 });
 
 test("inclui recursos essenciais de acessibilidade e reflow", () => {

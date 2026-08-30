@@ -82,6 +82,8 @@ A base foi aprovada em testes automatizados e manuais. A integração em `main`,
 - [x] permitir revisar, editar, remover, adicionar e reordenar tópicos;
 - [x] limitar o panorama geral a uma introdução curta;
 - [x] renderizar tabelas Markdown de forma segura e responsiva;
+- [x] renderizar fórmulas LaTeX localmente e sem confundir valores monetários;
+- [x] gerar uma pergunta introdutória para cada tópico planejado;
 - [x] migrar dados da v0.1.0 para `schemaVersion: 3`.
 
 ### Fase 2 — trilhas individuais dos tópicos

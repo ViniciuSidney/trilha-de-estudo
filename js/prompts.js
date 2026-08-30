@@ -7,6 +7,11 @@
     return state.topics.map((topic, index) => `${index + 1}. ${topic.title}${topic.objective ? ` — ${topic.objective}` : ""}`).join("\n");
   }
 
+  function latexGuidance(jsonOutput = false) {
+    const jsonRule = jsonOutput ? " Em campos JSON, duplique cada barra invertida, por exemplo: \\\\(x = 1\\\\)." : "";
+    return `Quando houver fórmulas, use LaTeX com \\( ... \\) para expressões na linha e \\[ ... \\] para fórmulas destacadas. Mantenha valores monetários, como R$ 100, fora dos delimitadores matemáticos.${jsonRule}`;
+  }
+
   function buildTopicPlanPrompt(state) {
     return `Organize o estudo abaixo em tópicos essenciais e progressivos.
 
@@ -36,14 +41,20 @@ Use Markdown com esta estrutura:
 2. como os tópicos se conectam;
 3. síntese final em até 5 itens.
 
-Use uma tabela Markdown somente quando ela tornar uma comparação realmente mais clara. Não crie exercícios, não repita ideias e não ultrapasse 400 palavras.`;
+Use uma tabela Markdown somente quando ela tornar uma comparação realmente mais clara. ${latexGuidance()} Não crie exercícios, não repita ideias e não ultrapasse 400 palavras.`;
   }
 
   function buildIntroPrompt(state) {
-    return `Com base no panorama abaixo sobre "${studyPath(state)}", crie 4 perguntas introdutórias discursivas em ordem crescente de dificuldade. Distribua as perguntas entre os tópicos planejados e verifique compreensão, não memorização mecânica.
+    const questionCount = state.topics.length || 1;
+    return `Com base no panorama abaixo sobre "${studyPath(state)}", crie exatamente ${questionCount} ${questionCount === 1 ? "pergunta introdutória discursiva" : "perguntas introdutórias discursivas"}: uma para cada tópico planejado, seguindo a mesma ordem da lista. Verifique compreensão, não memorização mecânica.
+
+TÓPICOS:
+${topicList(state) || "1. Assunto geral"}
 
 CONTEÚDO:
 ${state.theory}
+
+${latexGuidance(true)}
 
 Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, neste formato:
 [
@@ -63,6 +74,8 @@ ${state.theory}
 
 RESPOSTAS INTRODUTÓRIAS:
 ${introContext}
+
+${latexGuidance(true)}
 
 Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, neste formato exato:
 {"questions":[{"id":1,"statement":"enunciado","options":{"A":"alternativa","B":"alternativa","C":"alternativa","D":"alternativa"},"answer":"A","explanation":"justificativa curta da resposta correta"}]}`;
@@ -88,6 +101,8 @@ Faça uma devolutiva em Markdown com:
 5. três pontos de atenção para uma próxima revisão;
 6. uma conclusão curta e encorajadora.
 
+${latexGuidance()}
+
 Não invente dificuldades que os dados não demonstram e explique os erros sem tom punitivo.`;
   }
 
@@ -104,7 +119,7 @@ ${state.consolidation}
 CORREÇÕES ATIVAS ESCRITAS PELO ALUNO:
 ${reflections || "nenhuma correção registrada"}
 
-Crie entre 6 e 10 cartões curtos. Priorize os conceitos fundamentais e os erros demonstrados pelo aluno. Evite perguntas ambíguas e respostas longas.
+Crie entre 6 e 10 cartões curtos. Priorize os conceitos fundamentais e os erros demonstrados pelo aluno. Evite perguntas ambíguas e respostas longas. ${latexGuidance(true)}
 
 Responda SOMENTE com JSON válido, sem bloco de código e sem comentários, neste formato:
 {"cards":[{"front":"pergunta","back":"resposta","tags":["assunto","revisão"]}]}`;

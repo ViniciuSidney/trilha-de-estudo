@@ -42,10 +42,13 @@
     });
   }
 
-  function parseIntro(raw) {
+  function parseIntro(raw, expectedCount = 0) {
     const parsed = parseJSON(raw);
     if (!Array.isArray(parsed)) throw new ImportValidationError("A resposta precisa ser uma lista JSON de perguntas.");
     validateItemCount(parsed, "pergunta", "perguntas", 30);
+    if (expectedCount && parsed.length !== expectedCount) {
+      throw new ImportValidationError(`A resposta precisa conter exatamente ${expectedCount} ${expectedCount === 1 ? "pergunta" : "perguntas"}: uma para cada tópico planejado.`);
+    }
     return parsed.map((item, index) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) throw new ImportValidationError(`A pergunta ${index + 1} não é um objeto válido.`);
       return {

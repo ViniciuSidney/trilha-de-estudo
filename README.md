@@ -24,6 +24,8 @@ Aplicação publicada: [viniciusidney.github.io/trilha-de-estudo](https://vinici
 - planejamento de tópicos importável, editável e reordenável;
 - panorama geral limitado a 400 palavras pelo prompt;
 - exibição segura e responsiva de tabelas Markdown;
+- exibição local de fórmulas LaTeX em conteúdos, perguntas e correções;
+- uma pergunta introdutória para cada tópico planejado;
 - central local para iniciar, continuar e administrar estudos;
 - múltiplas sessões independentes com histórico, progresso e desempenho;
 - ações para renomear, duplicar e excluir sessões;
@@ -63,7 +65,7 @@ Com Node.js instalado, execute:
 npm test
 ```
 
-A suíte cobre o modelo de dados, migrações, backups, validações, exportações, aprendizagem ativa, as catorze telas, tabelas Markdown e requisitos estruturais de acessibilidade. O GitHub Actions repete essas verificações em pushes e pull requests.
+A suíte cobre o modelo de dados, migrações, backups, validações, exportações, aprendizagem ativa, as catorze telas, tabelas Markdown, fórmulas LaTeX e requisitos estruturais de acessibilidade. O GitHub Actions repete essas verificações em pushes e pull requests.
 
 ## Estrutura
 
@@ -98,6 +100,11 @@ trilha-de-estudo/
 │   └── views.js
 ├── tests/
 │   └── run-tests.js
+├── vendor/
+│   ├── fonts/
+│   ├── katex.min.css
+│   ├── katex.min.js
+│   └── KATEX-LICENSE.txt
 ├── .github/workflows/checks.yml
 ├── .gitignore
 ├── CHANGELOG.md

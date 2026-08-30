@@ -78,9 +78,114 @@
     return output.join("");
   }
 
+  function isEscaped(value, index) {
+    let slashes = 0;
+    for (let cursor = index - 1; cursor >= 0 && value[cursor] === "\\"; cursor -= 1) slashes += 1;
+    return slashes % 2 === 1;
+  }
+
+  function findClosingDelimiter(value, start, delimiter) {
+    let cursor = start;
+    while (cursor < value.length) {
+      const found = value.indexOf(delimiter, cursor);
+      if (found < 0) return -1;
+      if (!isEscaped(value, found)) return found;
+      cursor = found + delimiter.length;
+    }
+    return -1;
+  }
+
+  function tokenizeMath(value = "") {
+    const tokens = [];
+    let textStart = 0;
+    let cursor = 0;
+
+    const pushMath = (start, end, expression, displayMode) => {
+      if (start > textStart) tokens.push({ type: "text", value: value.slice(textStart, start) });
+      tokens.push({ type: "math", value: expression, displayMode });
+      cursor = end;
+      textStart = end;
+    };
+
+    while (cursor < value.length) {
+      if (value.startsWith("\\[", cursor) && !isEscaped(value, cursor)) {
+        const end = findClosingDelimiter(value, cursor + 2, "\\]");
+        if (end >= 0) {
+          pushMath(cursor, end + 2, value.slice(cursor + 2, end), true);
+          continue;
+        }
+      }
+
+      if (value.startsWith("\\(", cursor) && !isEscaped(value, cursor)) {
+        const end = findClosingDelimiter(value, cursor + 2, "\\)");
+        if (end >= 0) {
+          pushMath(cursor, end + 2, value.slice(cursor + 2, end), false);
+          continue;
+        }
+      }
+
+      if (value.startsWith("$$", cursor) && !isEscaped(value, cursor)) {
+        const end = findClosingDelimiter(value, cursor + 2, "$$");
+        if (end >= 0) {
+          pushMath(cursor, end + 2, value.slice(cursor + 2, end), true);
+          continue;
+        }
+      }
+
+      if (value[cursor] === "$" && !isEscaped(value, cursor)) {
+        const previous = value[cursor - 1] || "";
+        const next = value[cursor + 1] || "";
+        const canOpen = !/[\p{L}\p{N}]/u.test(previous) && next && !/\s/.test(next) && next !== "$";
+        if (canOpen) {
+          const end = findClosingDelimiter(value, cursor + 1, "$");
+          const expression = end >= 0 ? value.slice(cursor + 1, end) : "";
+          if (end >= 0 && expression.trim() && !expression.includes("\n")) {
+            pushMath(cursor, end + 1, expression, false);
+            continue;
+          }
+        }
+      }
+
+      cursor += 1;
+    }
+
+    if (textStart < value.length) tokens.push({ type: "text", value: value.slice(textStart) });
+    return tokens;
+  }
+
+  function renderMath(root) {
+    if (!root || !global.document || typeof global.katex?.renderToString !== "function") return;
+    const walker = global.document.createTreeWalker(root, global.NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      const parent = node.parentElement;
+      if (!parent || parent.closest("textarea, input, script, style, pre, code, .katex, [data-no-math]")) continue;
+      if (tokenizeMath(node.nodeValue).some((token) => token.type === "math")) nodes.push(node);
+    }
+
+    nodes.forEach((node) => {
+      const fragment = global.document.createDocumentFragment();
+      tokenizeMath(node.nodeValue).forEach((token) => {
+        if (token.type === "text") return fragment.appendChild(global.document.createTextNode(token.value));
+        const wrapper = global.document.createElement(token.displayMode ? "div" : "span");
+        wrapper.className = token.displayMode ? "math-block" : "math-inline";
+        wrapper.innerHTML = global.katex.renderToString(token.value, {
+          displayMode: token.displayMode,
+          throwOnError: false,
+          strict: "ignore",
+          trust: false,
+          output: "htmlAndMathml",
+        });
+        fragment.appendChild(wrapper);
+      });
+      node.replaceWith(fragment);
+    });
+  }
+
   function stripCodeFence(raw = "") {
     return raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
   }
 
-  global.TrilhaApp.utils = { escapeHTML, renderMarkdown, stripCodeFence };
+  global.TrilhaApp.utils = { escapeHTML, renderMarkdown, tokenizeMath, renderMath, stripCodeFence };
 })(window);

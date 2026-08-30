@@ -2,7 +2,7 @@
 
 ## Aplicação estática
 
-A base utiliza HTML, CSS e JavaScript sem bibliotecas externas. Isso mantém o projeto simples, executável offline e fácil de estudar ou publicar.
+A base utiliza HTML, CSS e JavaScript sem framework ou processo de compilação. O KaTeX é distribuído dentro do próprio projeto exclusivamente para fórmulas, mantendo a aplicação executável offline e fácil de publicar.
 
 ## Local-first
 
@@ -41,7 +41,7 @@ Claro e escuro utilizam paletas próprias. A preferência é global, fica salva 
 
 ## Central e múltiplas sessões
 
-A central existe fora do assistente de doze telas. Ela apresenta o histórico local e permite iniciar, continuar, revisar e administrar sessões independentes. Abrir uma sessão define `activeSessionId`; voltar à central apenas fecha a sessão ativa, sem remover seu conteúdo.
+A central existe fora do assistente de catorze telas. Ela apresenta o histórico local e permite iniciar, continuar, revisar e administrar sessões independentes. Abrir uma sessão define `activeSessionId`; voltar à central apenas fecha a sessão ativa, sem remover seu conteúdo.
 
 Cada sessão guarda seu próprio estado completo. Título, assunto, status e datas ficam também como metadados para que a central possa renderizar rapidamente progresso e desempenho.
 
@@ -90,7 +90,7 @@ Em telas menores, o menu lateral controla foco, estado expandido e fechamento po
 
 ## Qualidade automatizada
 
-A suíte em `tests/run-tests.js` usa apenas recursos nativos do Node.js. Ela cobre seletores, exportação, migrações, backup, validações, renderização das doze telas e requisitos estruturais da interface. O GitHub Actions executa a mesma verificação em `dev`, `main` e pull requests para reduzir regressões antes de uma release.
+A suíte em `tests/run-tests.js` usa apenas recursos nativos do Node.js. Ela cobre seletores, exportação, migrações, backup, validações, renderização das catorze telas e requisitos estruturais da interface. O GitHub Actions executa a mesma verificação em `dev`, `main` e pull requests para reduzir regressões antes de uma release.
 
 ## Diálogos próprios
 
@@ -111,3 +111,7 @@ A primeira fase da v0.2.0 mantém as etapas de aprendizagem da versão anterior 
 ## Markdown e tabelas
 
 O renderizador permanece local e sem dependências externas. O conteúdo é escapado antes da interpretação de títulos, negrito, listas e tabelas no padrão Markdown. Tabelas ficam em um contêiner próprio com rolagem horizontal interna, preservando a regra de não criar rolagem horizontal geral na aplicação.
+
+## Fórmulas LaTeX
+
+O KaTeX e suas fontes são versionados em `vendor/`, sem carregamento por CDN. A camada de utilidades reconhece `\\( ... \\)`, `\\[ ... \\]`, `$...$` e `$$...$$`, ignora campos editáveis e preserva valores monetários como `R$ 100`. A renderização mantém MathML para tecnologias assistivas e desabilita comandos confiáveis para não permitir HTML arbitrário vindo do conteúdo da IA.

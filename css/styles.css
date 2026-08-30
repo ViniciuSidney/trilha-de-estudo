@@ -388,6 +388,12 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 4px 
 .table-wrap th { background: var(--green-soft); color: var(--text); font-size: .75rem; letter-spacing: .02em; }
 .table-wrap tbody tr:last-child td { border-bottom: 0; }
 .table-wrap tbody tr:nth-child(even) { background: var(--surface-soft); }
+.math-inline { display: inline; }
+.math-inline .katex { font-size: 1.04em; }
+.math-block { width: 100%; margin: 20px 0; overflow-x: auto; overflow-y: hidden; padding: 12px 4px; text-align: center; scrollbar-gutter: stable; }
+.math-block .katex-display { margin: 0; }
+.reading .math-block { border-radius: 12px; background: var(--surface-soft); }
+.question-card .katex, .result-card .katex, .model-answer .katex { color: inherit; }
 
 .topic-review-list { display: grid; gap: var(--space-panel); }
 .topic-review-card { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }

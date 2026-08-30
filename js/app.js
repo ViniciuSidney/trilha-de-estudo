@@ -9,7 +9,7 @@ const { downloadSessionText, downloadSessionJSON } = window.TrilhaApp.exporter;
 const { createDemoState } = window.TrilhaApp.demo;
 const { createViewRenderer } = window.TrilhaApp.views;
 const { sessionName, renderHome } = window.TrilhaApp.home;
-const { escapeHTML } = window.TrilhaApp.utils;
+const { escapeHTML, renderMath } = window.TrilhaApp.utils;
 const { downloadBackup, parseBackup } = window.TrilhaApp.backup;
 
 const sessionService = createSessionService();
@@ -458,7 +458,7 @@ async function parseTopics() {
 
 async function parseIntro() {
   try {
-    const parsed = validators.parseIntro(state.introRaw);
+    const parsed = validators.parseIntro(state.introRaw, state.topics.length);
     if (state.introQuestions.length && !await confirmAction({
       eyebrow: "Perguntas iniciais",
       title: "Substituir perguntas importadas?",
@@ -583,6 +583,7 @@ function render() {
   const actionRows = screenContent.querySelectorAll(".button-row");
   const primaryActions = actionRows[actionRows.length - 1];
   if (primaryActions) screenActions.appendChild(primaryActions);
+  renderMath(screenContent);
   const activeStep = steps[state.currentStep];
   progressLabel.textContent = `${activeStep.phase} · ${activeStep.mode}`;
   const progress = Math.round(((state.currentStep + 1) / steps.length) * 100);
